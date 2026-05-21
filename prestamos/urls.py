@@ -20,6 +20,8 @@ urlpatterns = [
     # Sanciones
     path('sanciones/', views.lista_sanciones, name='sanciones'),
 
-    # Reportes (placeholder — se completa en la siguiente parte)
-    path('reportes/', views.lista_prestamos, name='reportes'),
+    # Reportes
+    path('reportes/', views.reportes, name='reportes'),
+    path('reportes/pdf/', views.exportar_pdf, name='exportar_pdf'),
+    path('reportes/excel/', views.exportar_excel, name='exportar_excel'),
 ]

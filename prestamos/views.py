@@ -2,12 +2,25 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Q
 from datetime import timedelta, date
 from catalogo.models import Libro
 from .models import Reserva, Prestamo, Sancion
 from .forms import FormularioReserva, FormularioPrestamo, FiltroPrestamoForm
+
+# Imports para exportación
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+import io
 
 
 # ─────────────── RESERVAS ───────────────
@@ -274,3 +287,277 @@ def lista_sanciones(request):
     else:
         sanciones = Sancion.objects.filter(usuario=request.user)
     return render(request, 'prestamos/lista_sanciones.html', {'sanciones': sanciones})
+
+
+# ─────────────── REPORTES ───────────────
+
+def _aplicar_filtros_reporte(request):
+    """Helper: aplica los filtros de FiltroPrestamoForm y devuelve (queryset, form)."""
+    form = FiltroPrestamoForm(request.GET)
+    prestamos = Prestamo.objects.select_related('usuario', 'libro').all()
+
+    if form.is_valid():
+        estado = form.cleaned_data.get('estado')
+        fecha_desde = form.cleaned_data.get('fecha_desde')
+        fecha_hasta = form.cleaned_data.get('fecha_hasta')
+        q = form.cleaned_data.get('q')
+
+        if estado:
+            prestamos = prestamos.filter(estado=estado)
+        if fecha_desde:
+            prestamos = prestamos.filter(fecha_prestamo__date__gte=fecha_desde)
+        if fecha_hasta:
+            prestamos = prestamos.filter(fecha_prestamo__date__lte=fecha_hasta)
+        if q:
+            prestamos = prestamos.filter(
+                Q(usuario__username__icontains=q) |
+                Q(usuario__first_name__icontains=q) |
+                Q(usuario__last_name__icontains=q) |
+                Q(libro__titulo__icontains=q)
+            )
+
+    return prestamos.order_by('-fecha_prestamo'), form
+
+
+@login_required
+def reportes(request):
+    """Vista principal de reportes — solo bibliotecarios."""
+    if not request.user.es_bibliotecario:
+        messages.error(request, 'Solo los bibliotecarios pueden acceder a los reportes.')
+        return redirect('dashboard:index')
+
+    prestamos, form_filtro = _aplicar_filtros_reporte(request)
+
+    return render(request, 'prestamos/reportes.html', {
+        'prestamos': prestamos,
+        'form_filtro': form_filtro,
+        'total': prestamos.count(),
+    })
+
+
+@login_required
+def exportar_pdf(request):
+    """Exporta los préstamos filtrados como PDF — solo bibliotecarios."""
+    if not request.user.es_bibliotecario:
+        return HttpResponse('Acceso denegado.', status=403)
+
+    prestamos, _ = _aplicar_filtros_reporte(request)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        leftMargin=1.5 * cm,
+        rightMargin=1.5 * cm,
+        topMargin=2 * cm,
+        bottomMargin=1.5 * cm,
+    )
+
+    estilos = getSampleStyleSheet()
+    estilo_titulo = ParagraphStyle(
+        'titulo',
+        parent=estilos['Heading1'],
+        alignment=TA_CENTER,
+        fontSize=16,
+        textColor=colors.HexColor('#5c3d2e'),
+        spaceAfter=6,
+    )
+    estilo_sub = ParagraphStyle(
+        'subtitulo',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontSize=9,
+        textColor=colors.HexColor('#888888'),
+        spaceAfter=14,
+    )
+
+    elementos = []
+    elementos.append(Paragraph('Biblioteca Digital — Reporte de Préstamos', estilo_titulo))
+    elementos.append(Paragraph(
+        f'Generado el {timezone.now().strftime("%d/%m/%Y %H:%M")} | Total: {prestamos.count()} préstamo(s)',
+        estilo_sub
+    ))
+
+    # Encabezados
+    cabecera = ['#', 'Libro', 'Usuario', 'Fecha préstamo', 'Vencimiento', 'Devolución', 'Estado', 'Retraso (días)']
+    filas = [cabecera]
+
+    ESTADOS = {
+        'activo': 'Activo',
+        'devuelto': 'Devuelto',
+        'retrasado': 'Retrasado',
+        'renovado': 'Renovado',
+    }
+
+    for i, p in enumerate(prestamos, start=1):
+        devolucion = p.fecha_devolucion.strftime('%d/%m/%Y') if p.fecha_devolucion else '—'
+        filas.append([
+            str(i),
+            p.libro.titulo[:40] + ('…' if len(p.libro.titulo) > 40 else ''),
+            p.usuario.get_full_name() or p.usuario.username,
+            p.fecha_prestamo.strftime('%d/%m/%Y'),
+            p.fecha_vencimiento.strftime('%d/%m/%Y'),
+            devolucion,
+            ESTADOS.get(p.estado, p.estado),
+            str(p.dias_retraso) if p.dias_retraso else '—',
+        ])
+
+    COLOR_HEADER = colors.HexColor('#5c3d2e')
+    COLOR_FILA_PAR = colors.HexColor('#faf6f0')
+
+    tabla = Table(filas, repeatRows=1, colWidths=[1*cm, 7*cm, 4.5*cm, 3.2*cm, 3.2*cm, 3.2*cm, 2.8*cm, 3*cm])
+    estilo_tabla = TableStyle([
+        # Encabezado
+        ('BACKGROUND', (0, 0), (-1, 0), COLOR_HEADER),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, 0), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        # Filas de datos
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('VALIGN', (0, 1), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 1), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (7, 1), (7, -1), 'CENTER'),
+        # Filas alternas
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, COLOR_FILA_PAR]),
+        # Bordes
+        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#cccccc')),
+        ('LINEBELOW', (0, 0), (-1, 0), 1.2, COLOR_HEADER),
+    ])
+    tabla.setStyle(estilo_tabla)
+    elementos.append(tabla)
+
+    doc.build(elementos)
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reporte_prestamos.pdf"'
+    return response
+
+
+@login_required
+def exportar_excel(request):
+    """Exporta los préstamos filtrados como Excel — solo bibliotecarios."""
+    if not request.user.es_bibliotecario:
+        return HttpResponse('Acceso denegado.', status=403)
+
+    prestamos, _ = _aplicar_filtros_reporte(request)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Préstamos'
+
+    # Estilos
+    color_cafe = 'FF5C3D2E'
+    color_dorado = 'FFC9A84C'
+    color_crema = 'FFFFF8F0'
+
+    fuente_header = Font(bold=True, color='FFFFFFFF', size=10)
+    fuente_titulo = Font(bold=True, color=color_cafe, size=13)
+    relleno_header = PatternFill(fill_type='solid', fgColor=color_cafe)
+    relleno_par = PatternFill(fill_type='solid', fgColor=color_crema)
+    borde_celda = Border(
+        left=Side(style='thin', color='FFCCCCCC'),
+        right=Side(style='thin', color='FFCCCCCC'),
+        top=Side(style='thin', color='FFCCCCCC'),
+        bottom=Side(style='thin', color='FFCCCCCC'),
+    )
+    centrado = Alignment(horizontal='center', vertical='center')
+    izquierda = Alignment(horizontal='left', vertical='center')
+
+    # Título del reporte
+    ws.merge_cells('A1:H1')
+    ws['A1'] = 'Biblioteca Digital — Reporte de Préstamos'
+    ws['A1'].font = fuente_titulo
+    ws['A1'].alignment = centrado
+    ws.row_dimensions[1].height = 28
+
+    ws.merge_cells('A2:H2')
+    ws['A2'] = f'Generado el {timezone.now().strftime("%d/%m/%Y %H:%M")} | Total: {prestamos.count()} préstamo(s)'
+    ws['A2'].font = Font(italic=True, color='FF888888', size=9)
+    ws['A2'].alignment = centrado
+    ws.row_dimensions[2].height = 18
+
+    # Encabezados (fila 3)
+    cabeceras = ['#', 'Libro', 'Usuario', 'Fecha préstamo', 'Vencimiento', 'Devolución', 'Estado', 'Retraso (días)']
+    for col, texto in enumerate(cabeceras, start=1):
+        celda = ws.cell(row=3, column=col, value=texto)
+        celda.font = fuente_header
+        celda.fill = relleno_header
+        celda.alignment = centrado
+        celda.border = borde_celda
+    ws.row_dimensions[3].height = 22
+
+    # Datos
+    ESTADOS = {
+        'activo': 'Activo',
+        'devuelto': 'Devuelto',
+        'retrasado': 'Retrasado',
+        'renovado': 'Renovado',
+    }
+
+    for i, p in enumerate(prestamos, start=1):
+        fila = i + 3
+        devolucion = p.fecha_devolucion.strftime('%d/%m/%Y') if p.fecha_devolucion else '—'
+        valores = [
+            i,
+            p.libro.titulo,
+            p.usuario.get_full_name() or p.usuario.username,
+            p.fecha_prestamo.strftime('%d/%m/%Y'),
+            p.fecha_vencimiento.strftime('%d/%m/%Y'),
+            devolucion,
+            ESTADOS.get(p.estado, p.estado),
+            p.dias_retraso if p.dias_retraso else '—',
+        ]
+        relleno_fila = relleno_par if i % 2 == 0 else None
+        alineaciones = [centrado, izquierda, izquierda, centrado, centrado, centrado, centrado, centrado]
+
+        for col, (valor, ali) in enumerate(zip(valores, alineaciones), start=1):
+            celda = ws.cell(row=fila, column=col, value=valor)
+            celda.alignment = ali
+            celda.border = borde_celda
+            if relleno_fila:
+                celda.fill = relleno_fila
+
+        ws.row_dimensions[fila].height = 18
+
+        # Color de estado
+        celda_estado = ws.cell(row=fila, column=7)
+        if p.estado == 'retrasado':
+            celda_estado.font = Font(bold=True, color='FFC0392B')
+        elif p.estado == 'activo':
+            celda_estado.font = Font(bold=True, color='FF27AE60')
+        elif p.estado == 'devuelto':
+            celda_estado.font = Font(color='FF555555')
+
+    # Anchos de columna
+    anchos = [5, 42, 28, 16, 16, 16, 14, 16]
+    for col, ancho in enumerate(anchos, start=1):
+        ws.column_dimensions[get_column_letter(col)].width = ancho
+
+    # Fila de totales
+    fila_total = prestamos.count() + 4
+    ws.merge_cells(f'A{fila_total}:G{fila_total}')
+    ws[f'A{fila_total}'] = f'TOTAL DE PRÉSTAMOS: {prestamos.count()}'
+    ws[f'A{fila_total}'].font = Font(bold=True, color=color_cafe, size=10)
+    ws[f'A{fila_total}'].fill = PatternFill(fill_type='solid', fgColor='FFFEF3DC')
+    ws[f'A{fila_total}'].alignment = centrado
+    ws[f'A{fila_total}'].border = borde_celda
+    ws.row_dimensions[fila_total].height = 20
+
+    # Guardar en buffer
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="reporte_prestamos.xlsx"'
+    return response
