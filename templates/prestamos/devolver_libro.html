@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Devolver libro{% endblock %}
+{% block page_title %}Registrar devolución{% endblock %}
+
+{% block content %}
+<div class="card p-4" style="max-width:550px; margin:0 auto; text-align:center;">
+    {% if prestamo.esta_retrasado %}
+    <i class="bi bi-exclamation-triangle text-danger" style="font-size:3rem;"></i>
+    <h5 class="mt-3 text-danger">¡Devolución con retraso!</h5>
+    <p>Este préstamo tiene <strong>{{ prestamo.calcular_dias_retraso }} días</strong> de retraso.</p>
+    <p class="text-muted">Se aplicará una sanción automática al usuario.</p>
+    {% else %}
+    <i class="bi bi-arrow-return-left text-success" style="font-size:3rem;"></i>
+    <h5 class="mt-3">Registrar devolución de "{{ prestamo.libro.titulo }}"</h5>
+    {% endif %}
+    <form method="post" class="d-flex gap-2 justify-content-center mt-3">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check me-2"></i>Confirmar devolución
+        </button>
+        <a href="{% url 'prestamos:lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

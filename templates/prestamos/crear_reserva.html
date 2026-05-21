@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Reservar libro{% endblock %}
+{% block page_title %}Reservar libro{% endblock %}
+
+{% block content %}
+<div class="card p-4" style="max-width:550px; margin:0 auto;">
+    <h5 class="fw-bold mb-1">Reservar: {{ libro.titulo }}</h5>
+    <p class="text-muted">La reserva expira en 3 días si no la retiras.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Notas (opcional)</label>
+            {{ form.notas }}
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-bookmark-plus me-2"></i>Confirmar reserva
+            </button>
+            <a href="{% url 'catalogo:libro_detalle' libro.pk %}" class="btn btn-outline-secondary">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

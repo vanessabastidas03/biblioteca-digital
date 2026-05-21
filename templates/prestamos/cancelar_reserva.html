@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4" style="max-width:500px; margin:0 auto; text-align:center;">
+    <i class="bi bi-x-circle text-danger" style="font-size:3rem;"></i>
+    <h5 class="mt-3">¿Cancelar reserva de "{{ reserva.libro.titulo }}"?</h5>
+    <form method="post" class="d-flex gap-2 justify-content-center mt-3">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, cancelar</button>
+        <a href="{% url 'prestamos:reservas' %}" class="btn btn-outline-secondary">No, volver</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Detalle préstamo{% endblock %}
+{% block page_title %}Detalle del Préstamo{% endblock %}
+
+{% block content %}
+<div class="card p-4" style="max-width:700px; margin:0 auto;">
+    <h5 class="fw-bold mb-4">Préstamo #{{ prestamo.pk }}</h5>
+    <div class="row">
+        <div class="col-sm-6">
+            <p><strong>Libro:</strong>
+                <a href="{% url 'catalogo:libro_detalle' prestamo.libro.pk %}">
+                    {{ prestamo.libro.titulo }}
+                </a>
+            </p>
+            <p><strong>Usuario:</strong> {{ prestamo.usuario.get_full_name }}</p>
+            <p><strong>Fecha préstamo:</strong> {{ prestamo.fecha_prestamo|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="col-sm-6">
+            <p><strong>Vencimiento:</strong> {{ prestamo.fecha_vencimiento|date:"d/m/Y" }}</p>
+            <p><strong>Estado:</strong>
+                <span class="badge
+                    {% if prestamo.estado == 'activo' %}bg-success
+                    {% elif prestamo.estado == 'devuelto' %}bg-secondary
+                    {% elif prestamo.estado == 'retrasado' %}bg-danger
+                    {% else %}bg-info{% endif %}">
+                    {{ prestamo.get_estado_display }}
+                </span>
+            </p>
+            {% if prestamo.fecha_devolucion %}
+            <p><strong>Devolución:</strong> {{ prestamo.fecha_devolucion|date:"d/m/Y H:i" }}</p>
+            {% endif %}
+            {% if prestamo.dias_retraso %}
+            <p class="text-danger"><strong>Días de retraso:</strong> {{ prestamo.dias_retraso }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% if prestamo.observaciones %}
+    <p><strong>Observaciones:</strong> {{ prestamo.observaciones }}</p>
+    {% endif %}
+    <a href="{% url 'prestamos:lista' %}" class="btn btn-outline-secondary mt-2">
+        <i class="bi bi-arrow-left me-2"></i>Volver
+    </a>
+</div>
+{% endblock %}

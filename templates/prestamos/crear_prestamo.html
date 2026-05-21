@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Nuevo Préstamo{% endblock %}
+{% block page_title %}Registrar Préstamo{% endblock %}
+
+{% block content %}
+<div class="card p-4" style="max-width:550px; margin:0 auto;">
+    <h5 class="fw-bold mb-4">Registrar Préstamo</h5>
+    {% if libro %}
+    <div class="alert alert-info">
+        <strong>Libro:</strong> {{ libro.titulo }}
+        {% if reserva %}<br><strong>Usuario:</strong> {{ reserva.usuario.get_full_name }}{% endif %}
+    </div>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Fecha de vencimiento *</label>
+            {{ form.fecha_vencimiento }}
+            {% if form.fecha_vencimiento.errors %}
+            <div class="text-danger small">{{ form.fecha_vencimiento.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Observaciones</label>
+            {{ form.observaciones }}
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle me-2"></i>Registrar préstamo
+            </button>
+            <a href="{% url 'prestamos:lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
