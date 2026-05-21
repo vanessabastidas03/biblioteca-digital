@@ -39,7 +39,8 @@ def iniciar_sesion(request):
             usuario = form.get_user()
             login(request, usuario)
             messages.success(request, f'¡Bienvenido/a de nuevo, {usuario.first_name}!')
-            next_url = request.GET.get('next', 'dashboard:index')
+            # next_url viene del query param; si no existe, redirige al dashboard
+            next_url = request.GET.get('next') or '/dashboard/'
             return redirect(next_url)
         else:
             messages.error(request, 'Usuario o contraseña incorrectos.')

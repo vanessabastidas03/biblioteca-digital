@@ -1,265 +1,396 @@
 {% extends 'base.html' %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard — Biblioteca Digital{% endblock %}
 {% block page_title %}Panel de Control{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Stat-card: asegura que el gradiente inline sea visible */
+.stat-card.card { background-color: transparent !important; }
+.stat-card .card-body { padding: 1.2rem 1.4rem; position: relative; overflow: hidden; }
+.stat-card .stat-num  { font-size: 2.2rem; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+.stat-card .stat-lbl  { font-size: .78rem; opacity: .82; margin-top: .3rem; font-weight: 500; }
+.stat-card .stat-icon { font-size: 3.2rem; opacity: .15; position: absolute; right: 12px; bottom: 6px;
+                         transition: opacity .3s, transform .3s; }
+.stat-card:hover .stat-icon { opacity: .28; transform: rotate(-10deg) scale(1.12); }
+
+/* Tarjeta de gráfico */
+.chart-card .card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--borde, #E5E7EB);
+    padding: .9rem 1.2rem;
+    font-weight: 700;
+    font-size: .9rem;
+    color: #2F3A4A;
+}
+.chart-card canvas { max-height: 200px; }
+
+/* Tabla resumen */
+.table-resumen th { font-size: .75rem; text-transform: uppercase; letter-spacing: .4px; }
+.table-resumen td { font-size: .85rem; vertical-align: middle; }
+
+/* Badge de estado */
+.estado-activo    { background: rgba(58,157,124,.15); color: #1a5e46; }
+.estado-devuelto  { background: rgba(107,114,128,.12); color: #374151; }
+.estado-retrasado { background: rgba(217,83,79,.15);   color: #7f1d1d; }
+</style>
+{% endblock %}
 
 {% block content %}
 
-<!-- Tarjetas de estadísticas principales -->
-<div class="row g-3 mb-4">
+<!-- ── Fila 1: Tarjetas principales ─────────────────────────────── -->
+<div class="row g-3 mb-3">
     <div class="col-6 col-md-3">
-        <div class="stat-card card text-white" style="background: linear-gradient(135deg,#2F3A4A,#7C5CBF);">
+        <div class="stat-card card text-white h-100"
+             style="background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);">
             <div class="card-body">
-                <div class="fs-2 fw-bold">{{ total_libros }}</div>
-                <div class="small opacity-75 mt-1"><i class="bi bi-journals me-1"></i>Total libros</div>
+                <div class="stat-num">{{ total_libros|default:"0" }}</div>
+                <div class="stat-lbl"><i class="bi bi-journals me-1"></i>Total libros</div>
                 <i class="bi bi-journal-text stat-icon"></i>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="stat-card card text-white" style="background: linear-gradient(135deg,#2d5a27,#27ae60);">
+        <div class="stat-card card text-white h-100"
+             style="background: linear-gradient(135deg, #2d5a27 0%, #3a9d7c 100%);">
             <div class="card-body">
-                <div class="fs-2 fw-bold">{{ libros_disponibles }}</div>
-                <div class="small opacity-75 mt-1"><i class="bi bi-check-circle me-1"></i>Disponibles</div>
+                <div class="stat-num">{{ libros_disponibles|default:"0" }}</div>
+                <div class="stat-lbl"><i class="bi bi-check-circle me-1"></i>Disponibles</div>
                 <i class="bi bi-check-circle stat-icon"></i>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="stat-card card text-white" style="background: linear-gradient(135deg,#4A90D9,#e8a020);">
+        <div class="stat-card card text-white h-100"
+             style="background: linear-gradient(135deg, #b05d2a 0%, #e07b39 100%);">
             <div class="card-body">
-                <div class="fs-2 fw-bold">{{ prestamos_activos }}</div>
-                <div class="small opacity-75 mt-1"><i class="bi bi-arrow-left-right me-1"></i>Préstamos activos</div>
+                <div class="stat-num">{{ prestamos_activos|default:"0" }}</div>
+                <div class="stat-lbl"><i class="bi bi-arrow-left-right me-1"></i>Préstamos activos</div>
                 <i class="bi bi-arrow-left-right stat-icon"></i>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="stat-card card text-white" style="background: linear-gradient(135deg,#c0392b,#e74c3c);">
+        <div class="stat-card card text-white h-100"
+             style="background: linear-gradient(135deg, #8b1a1a 0%, #c0392b 100%);">
             <div class="card-body">
-                <div class="fs-2 fw-bold">{{ prestamos_retrasados }}</div>
-                <div class="small opacity-75 mt-1"><i class="bi bi-exclamation-triangle me-1"></i>Retrasados</div>
+                <div class="stat-num">{{ prestamos_retrasados|default:"0" }}</div>
+                <div class="stat-lbl"><i class="bi bi-exclamation-triangle me-1"></i>Retrasados</div>
                 <i class="bi bi-exclamation-triangle stat-icon"></i>
             </div>
         </div>
     </div>
 </div>
 
+<!-- ── Fila 2: Tarjetas secundarias ─────────────────────────────── -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-4">
-        <div class="stat-card card text-white" style="background: linear-gradient(135deg,#1e3a5f,#2d6a9f);">
+        <div class="stat-card card text-white h-100"
+             style="background: linear-gradient(135deg, #0e4d7a 0%, #2980b9 100%);">
             <div class="card-body">
-                <div class="fs-2 fw-bold">{{ total_usuarios }}</div>
-                <div class="small opacity-75 mt-1"><i class="bi bi-people me-1"></i>Lectores registrados</div>
+                <div class="stat-num">{{ total_usuarios|default:"0" }}</div>
+                <div class="stat-lbl"><i class="bi bi-people me-1"></i>Lectores registrados</div>
                 <i class="bi bi-people stat-icon"></i>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-4">
-        <div class="stat-card card text-white" style="background: linear-gradient(135deg,#0e7490,#0891b2);">
+        <div class="stat-card card text-white h-100"
+             style="background: linear-gradient(135deg, #0e5a6b 0%, #0891b2 100%);">
             <div class="card-body">
-                <div class="fs-2 fw-bold">{{ reservas_pendientes }}</div>
-                <div class="small opacity-75 mt-1"><i class="bi bi-bookmark-check me-1"></i>Reservas pendientes</div>
+                <div class="stat-num">{{ reservas_pendientes|default:"0" }}</div>
+                <div class="stat-lbl"><i class="bi bi-bookmark-check me-1"></i>Reservas pendientes</div>
                 <i class="bi bi-bookmark-check stat-icon"></i>
             </div>
         </div>
     </div>
     <div class="col-6 col-md-4">
-        <div class="stat-card card text-white" style="background: linear-gradient(135deg,#7c3aed,#a855f7);">
+        <div class="stat-card card text-white h-100"
+             style="background: linear-gradient(135deg, #4a1a6e 0%, #7c3aed 100%);">
             <div class="card-body">
-                <div class="fs-2 fw-bold">{{ sanciones_activas }}</div>
-                <div class="small opacity-75 mt-1"><i class="bi bi-shield-exclamation me-1"></i>Sanciones activas</div>
+                <div class="stat-num">{{ sanciones_activas|default:"0" }}</div>
+                <div class="stat-lbl"><i class="bi bi-shield-exclamation me-1"></i>Sanciones activas</div>
                 <i class="bi bi-shield-exclamation stat-icon"></i>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Gráficos -->
-<div class="row g-3 mb-4">
+<!-- ── Fila 3: Gráficos principales ─────────────────────────────── -->
+<div class="row g-3 mb-3">
     <!-- Gráfico 1: Préstamos por mes -->
     <div class="col-md-7">
-        <div class="card p-3">
-            <h6 class="fw-bold mb-3">
-                <i class="bi bi-bar-chart me-2 text-primary"></i>
+        <div class="chart-card card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-bar-chart-fill text-primary"></i>
                 Préstamos por mes (últimos 6 meses)
-            </h6>
-            <canvas id="graficoMeses" height="120"></canvas>
+            </div>
+            <div class="card-body p-3">
+                {% if datos_meses != "[]" %}
+                <canvas id="graficoMeses"></canvas>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-bar-chart" style="font-size:2.5rem; opacity:.3;"></i>
+                    <p class="mt-2 small">No hay datos de préstamos aún.</p>
+                    <a href="{% url 'prestamos:lista' %}" class="btn btn-outline-primary btn-sm">
+                        Ver préstamos
+                    </a>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
-    <!-- Gráfico 2: Libros por estado (dona) -->
+    <!-- Gráfico 2: Estado de libros (dona) -->
     <div class="col-md-5">
-        <div class="card p-3">
-            <h6 class="fw-bold mb-3">
-                <i class="bi bi-pie-chart me-2 text-primary"></i>
-                Estado de libros
-            </h6>
-            <canvas id="graficoEstados" height="160"></canvas>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4">
-    <!-- Gráfico 3: Top 5 libros más prestados -->
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h6 class="fw-bold mb-3">
-                <i class="bi bi-trophy me-2 text-warning"></i>
-                Top 5 libros más prestados
-            </h6>
-            <canvas id="graficoTopLibros" height="150"></canvas>
-        </div>
-    </div>
-
-    <!-- Últimas reservas pendientes -->
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h6 class="fw-bold mb-3">
-                <i class="bi bi-bookmark me-2 text-info"></i>
-                Reservas pendientes
-            </h6>
-            <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Libro</th>
-                            <th>Usuario</th>
-                            <th>Expira</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in ultimas_reservas %}
-                        <tr>
-                            <td class="small">{{ r.libro.titulo|truncatechars:25 }}</td>
-                            <td class="small">{{ r.usuario.get_full_name }}</td>
-                            <td class="small">{{ r.fecha_expiracion|date:"d/m" }}</td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="3" class="text-muted text-center">Sin reservas pendientes</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <div class="chart-card card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-pie-chart-fill text-success"></i>
+                Estado del catálogo
+            </div>
+            <div class="card-body p-3 d-flex align-items-center justify-content-center">
+                {% if datos_estados != "[]" %}
+                <canvas id="graficoEstados"></canvas>
+                {% else %}
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-pie-chart" style="font-size:2.5rem; opacity:.3;"></i>
+                    <p class="mt-2 small">Sin libros en el catálogo.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Últimos préstamos -->
-<div class="card p-3">
-    <h6 class="fw-bold mb-3">
-        <i class="bi bi-clock-history me-2 text-secondary"></i>
+<!-- ── Fila 4: Top libros + Reservas ─────────────────────────────── -->
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="chart-card card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-trophy-fill text-warning"></i>
+                Top 5 libros más prestados
+            </div>
+            <div class="card-body p-3">
+                {% if datos_libros != "[]" %}
+                <canvas id="graficoTopLibros"></canvas>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-trophy" style="font-size:2.5rem; opacity:.3;"></i>
+                    <p class="mt-2 small">Aún no hay préstamos registrados.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="chart-card card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-bookmark-fill text-info"></i>
+                Reservas pendientes
+                {% if reservas_pendientes > 0 %}
+                <span class="badge ms-auto" style="background:#0891b2;">{{ reservas_pendientes }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-resumen align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Libro</th>
+                                <th>Usuario</th>
+                                <th class="pe-3 text-center">Expira</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in ultimas_reservas %}
+                            <tr>
+                                <td class="ps-3">
+                                    <i class="bi bi-book me-1 text-muted small"></i>
+                                    {{ r.libro.titulo|truncatechars:22 }}
+                                </td>
+                                <td>{{ r.usuario.get_full_name }}</td>
+                                <td class="pe-3 text-center">
+                                    <span class="badge" style="background:rgba(8,145,178,.12);color:#0e5a6b;">
+                                        {{ r.fecha_expiracion|date:"d/m" }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">
+                                    <i class="bi bi-bookmark" style="opacity:.4;"></i>
+                                    Sin reservas pendientes
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Últimos préstamos ──────────────────────────────────────────── -->
+<div class="chart-card card">
+    <div class="card-header d-flex align-items-center gap-2">
+        <i class="bi bi-clock-history text-secondary"></i>
         Últimos préstamos registrados
-    </h6>
-    <div class="table-responsive">
-        <table class="table table-sm align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Libro</th>
-                    <th>Usuario</th>
-                    <th>Fecha</th>
-                    <th>Vencimiento</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in ultimos_prestamos %}
-                <tr>
-                    <td class="small">{{ p.libro.titulo|truncatechars:30 }}</td>
-                    <td class="small">{{ p.usuario.get_full_name }}</td>
-                    <td class="small">{{ p.fecha_prestamo|date:"d/m/Y" }}</td>
-                    <td class="small">{{ p.fecha_vencimiento|date:"d/m/Y" }}</td>
-                    <td>
-                        <span class="badge
-                            {% if p.estado == 'activo' %}bg-success
-                            {% elif p.estado == 'devuelto' %}bg-secondary
-                            {% elif p.estado == 'retrasado' %}bg-danger
-                            {% else %}bg-info{% endif %} small">
-                            {{ p.get_estado_display }}
-                        </span>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5" class="text-center text-muted">No hay préstamos aún.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <a href="{% url 'prestamos:lista' %}" class="btn btn-outline-primary btn-sm ms-auto">
+            Ver todos <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-resumen table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Libro</th>
+                        <th>Usuario</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-center">Vencimiento</th>
+                        <th class="pe-3 text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in ultimos_prestamos %}
+                    <tr>
+                        <td class="ps-3">
+                            <i class="bi bi-journal-text me-1 text-muted small"></i>
+                            <strong>{{ p.libro.titulo|truncatechars:28 }}</strong>
+                        </td>
+                        <td>{{ p.usuario.get_full_name }}</td>
+                        <td class="text-center">{{ p.fecha_prestamo|date:"d/m/Y" }}</td>
+                        <td class="text-center {% if p.esta_retrasado %}text-danger fw-bold{% endif %}">
+                            {{ p.fecha_vencimiento|date:"d/m/Y" }}
+                        </td>
+                        <td class="pe-3 text-center">
+                            <span class="badge rounded-pill
+                                {% if p.estado == 'activo' %}bg-success
+                                {% elif p.estado == 'devuelto' %}bg-secondary
+                                {% elif p.estado == 'retrasado' %}bg-danger
+                                {% else %}bg-info{% endif %}">
+                                {{ p.get_estado_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox" style="font-size:2.5rem; opacity:.3;"></i>
+                            <p class="mt-2 mb-1">No hay préstamos registrados aún.</p>
+                            <a href="{% url 'prestamos:lista' %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i>Registrar primer préstamo
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
-<!-- Chart.js desde CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// Datos desde Django
-const labelsMeses = {{ labels_meses|safe }};
-const datosMeses  = {{ datos_meses|safe }};
-const labelsLibros = {{ labels_libros|safe }};
-const datosLibros  = {{ datos_libros|safe }};
-const labelsEstados = {{ labels_estados|safe }};
-const datosEstados  = {{ datos_estados|safe }};
+const labelsMeses    = {{ labels_meses|safe }};
+const datosMeses     = {{ datos_meses|safe }};
+const labelsLibros   = {{ labels_libros|safe }};
+const datosLibros    = {{ datos_libros|safe }};
+const labelsEstados  = {{ labels_estados|safe }};
+const datosEstados   = {{ datos_estados|safe }};
 const coloresEstados = {{ colores_estados|safe }};
 
-// Gráfico 1: Barras — préstamos por mes
-new Chart(document.getElementById('graficoMeses'), {
-    type: 'bar',
-    data: {
-        labels: labelsMeses,
-        datasets: [{
-            label: 'Préstamos',
-            data: datosMeses,
-            backgroundColor: 'rgba(45, 106, 159, 0.8)',
-            borderColor: '#1e3a5f',
-            borderWidth: 1,
-            borderRadius: 6,
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-    }
-});
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.color = '#6B7280';
 
-// Gráfico 2: Dona — estado de libros
-new Chart(document.getElementById('graficoEstados'), {
-    type: 'doughnut',
-    data: {
-        labels: labelsEstados,
-        datasets: [{
-            data: datosEstados,
-            backgroundColor: coloresEstados,
-            borderWidth: 2,
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { position: 'bottom', labels: { padding: 15 } }
+// ── Gráfico 1: Préstamos por mes ─────────────────────────────────
+if (labelsMeses.length > 0) {
+    new Chart(document.getElementById('graficoMeses'), {
+        type: 'bar',
+        data: {
+            labels: labelsMeses,
+            datasets: [{
+                label: 'Préstamos',
+                data: datosMeses,
+                backgroundColor: 'rgba(74,144,217,0.75)',
+                borderColor: '#2d6a9f',
+                borderWidth: 1.5,
+                borderRadius: 7,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, precision: 0 },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: { grid: { display: false } }
+            }
         }
-    }
-});
+    });
+}
 
-// Gráfico 3: Barras horizontales — top libros
-new Chart(document.getElementById('graficoTopLibros'), {
-    type: 'bar',
-    data: {
-        labels: labelsLibros,
-        datasets: [{
-            label: 'Veces prestado',
-            data: datosLibros,
-            backgroundColor: [
-                '#ffd700', '#c0c0c0', '#cd7f32', '#4dabf7', '#74c0fc'
-            ],
-            borderRadius: 4,
-        }]
-    },
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
-    }
-});
+// ── Gráfico 2: Estado de libros (dona) ───────────────────────────
+if (labelsEstados.length > 0) {
+    new Chart(document.getElementById('graficoEstados'), {
+        type: 'doughnut',
+        data: {
+            labels: labelsEstados,
+            datasets: [{
+                data: datosEstados,
+                backgroundColor: ['#4A90D9','#E07B39','#7C5CBF','#6B7280'],
+                borderWidth: 3,
+                borderColor: '#F8F7FF',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 14, font: { size: 12 }, usePointStyle: true }
+                }
+            }
+        }
+    });
+}
+
+// ── Gráfico 3: Top libros (barras horizontales) ──────────────────
+if (labelsLibros.length > 0) {
+    const COLORES_TOP = ['#4A90D9','#7C5CBF','#3A9D7C','#E07B39','#0891b2'];
+    new Chart(document.getElementById('graficoTopLibros'), {
+        type: 'bar',
+        data: {
+            labels: labelsLibros,
+            datasets: [{
+                label: 'Veces prestado',
+                data: datosLibros,
+                backgroundColor: COLORES_TOP.slice(0, datosLibros.length),
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+}
 </script>
 {% endblock %}

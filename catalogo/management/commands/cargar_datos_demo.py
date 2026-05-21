@@ -300,20 +300,24 @@ class Command(BaseCommand):
         # Préstamo retrasado (vencido hace 5 días)
         libro_cien = libros.get('978-84-376-0494-7')
         if libro_cien and lector2:
-            p_retrasado, created = Prestamo.objects.get_or_create(
+            existe_retrasado = Prestamo.objects.filter(
                 libro=libro_cien,
                 usuario=lector2,
                 estado__in=[Prestamo.ESTADO_RETRASADO, Prestamo.ESTADO_ACTIVO],
-                defaults={
-                    'fecha_vencimiento': hoy - timedelta(days=5),
-                    'estado': Prestamo.ESTADO_RETRASADO,
-                    'dias_retraso': 5,
-                }
-            )
-            if created:
-                # Actualizar ejemplares del libro
+            ).exists()
+            if not existe_retrasado:
+                Prestamo.objects.create(
+                    libro=libro_cien,
+                    usuario=lector2,
+                    fecha_vencimiento=hoy - timedelta(days=5),
+                    estado=Prestamo.ESTADO_RETRASADO,
+                    dias_retraso=5,
+                )
                 libro_cien.ejemplares_disponibles = max(0, libro_cien.ejemplares_disponibles - 1)
                 libro_cien.save()
+                created = True
+            else:
+                created = False
             self.stdout.write(f'  Préstamo retrasado (100 años → lector_sofia) — {"creado" if created else "ya existía"}')
 
         # ── Reservas ────────────────────────────────────────────────

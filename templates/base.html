@@ -38,7 +38,7 @@
         <nav class="flex-grow-1 mt-3">
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                    <a class="nav-link {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}"
                        href="{% url 'dashboard:index' %}">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>

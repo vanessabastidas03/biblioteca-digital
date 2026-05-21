@@ -123,8 +123,10 @@ body {
 }
 
 /* ── Tarjetas ─────────────────────────────────────────────────── */
+/* IMPORTANTE: NO usar !important en background para que los gradientes
+   inline de stat-cards puedan sobreescribir este valor */
 .card {
-  background: var(--bg-card) !important;
+  background-color: var(--bg-card);
   border: 1px solid var(--borde) !important;
   border-radius: var(--r-md) !important;
   box-shadow: var(--sombra-sm) !important;
@@ -163,6 +165,8 @@ body {
   box-shadow: var(--sombra-sm) !important;
   transition: transform var(--t), box-shadow var(--t) !important;
   overflow: hidden;
+  /* El background viene del inline style en el HTML */
+  background-color: transparent;
 }
 .stat-card:hover {
   transform: translateY(-5px) scale(1.015) !important;
@@ -430,4 +434,62 @@ body {
 /* ── Confirmaciones de eliminación ──────────────────────────── */
 .danger-confirm {
   border-top: 4px solid var(--m-rojo) !important;
+}
+
+/* ── Mejoras generales de la navbar top ──────────────────────── */
+.navbar-top { padding: 10px 20px; min-height: 56px; }
+.navbar-top h6 { font-weight: 600; color: var(--txt-muted); }
+
+/* ── Contenido principal: ancho correcto ─────────────────────── */
+.p-4 > .row, .p-4 > .card, .p-4 > div { max-width: 100%; }
+
+/* ── Asegura que las stat-cards muestren el gradiente inline ── */
+/* Cualquier .card que tenga estilo background directo */
+[style*="background:"], [style*="background-color:"] { background-color: unset; }
+
+/* ── Responsive: sidebar en móvil ───────────────────────────── */
+@media (max-width: 767.98px) {
+  .main-content { margin-left: 0 !important; }
+  .sidebar { display: none !important; }
+}
+
+/* ── Animación de entrada en el main content ─────────────────── */
+.p-4 { animation: fadeUp .4s ease both; }
+
+/* ── Mejora de tablas en móvil ───────────────────────────────── */
+@media (max-width: 575.98px) {
+  .table-responsive { border-radius: var(--r-md); }
+  .table thead { font-size: .72rem; }
+}
+
+/* ── Formulario: campo de texto con foco visible ─────────────── */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+}
+
+/* ── Radio button del rol en registro: ocultar el nativo ────── */
+.rol-radio { display: none !important; }
+
+/* ── Card de login: sin borde demasiado marcado ─────────────── */
+.login-card .card {
+  border-color: rgba(255,255,255,.14) !important;
+}
+
+/* ── Mejora visual del header de gráficos ────────────────────── */
+.card-header {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--borde) !important;
+  padding: .85rem 1.2rem;
+  font-weight: 700;
+  font-size: .9rem;
+}
+
+/* ── Tabla thead global ──────────────────────────────────────── */
+.table-light { --bs-table-bg: transparent !important; }
 }

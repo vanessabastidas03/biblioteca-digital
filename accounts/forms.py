@@ -26,10 +26,19 @@ class FormularioRegistro(UserCreationForm):
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'})
     )
+    rol = forms.ChoiceField(
+        label='Tipo de cuenta',
+        choices=[
+            (Usuario.ROL_LECTOR,        '📖  Lector — Consulto y reservo libros'),
+            (Usuario.ROL_BIBLIOTECARIO,  '🏛️  Bibliotecario — Administro la biblioteca'),
+        ],
+        widget=forms.RadioSelect(attrs={'class': 'rol-radio'}),
+        initial=Usuario.ROL_LECTOR,
+    )
 
     class Meta:
         model = Usuario
-        fields = ['username', 'first_name', 'last_name', 'email', 'telefono', 'password1', 'password2']
+        fields = ['username', 'first_name', 'last_name', 'email', 'telefono', 'rol', 'password1', 'password2']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
         }
@@ -47,7 +56,7 @@ class FormularioRegistro(UserCreationForm):
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.telefono = self.cleaned_data.get('telefono', '')
-        user.rol = Usuario.ROL_LECTOR  # Por defecto, todos son lectores
+        user.rol = self.cleaned_data.get('rol', Usuario.ROL_LECTOR)
         if commit:
             user.save()
         return user
