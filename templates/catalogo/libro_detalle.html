@@ -2,85 +2,188 @@
 {% block title %}{{ libro.titulo }}{% endblock %}
 {% block page_title %}Detalle del Libro{% endblock %}
 
+{% block extra_css %}
+<style>
+.portada-grande {
+    width: 100%;
+    height: 320px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,.18);
+}
+.portada-grande .portada-icono-g { font-size: 5rem; color: rgba(255,255,255,.65); position: relative; z-index: 1; }
+.portada-grande .portada-inicial-g {
+    position: absolute; bottom: 16px; right: 20px;
+    font-size: 6rem; font-weight: 900; color: rgba(255,255,255,.10);
+    font-family: Georgia, serif; line-height: 1; z-index: 1;
+}
+.portada-grande img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
+.info-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px; font-size: .8rem; font-weight: 600;
+    border: 1px solid transparent;
+}
+.chip-disponible { background:rgba(58,157,124,.12); color:#1a5e46; border-color:rgba(58,157,124,.25); }
+.chip-prestado   { background:rgba(224,123,57,.12);  color:#7a3510; border-color:rgba(224,123,57,.25); }
+.chip-reservado  { background:rgba(8,145,178,.12);   color:#0e4d7a; border-color:rgba(8,145,178,.25); }
+.chip-otro       { background:rgba(107,114,128,.12); color:#374151; border-color:rgba(107,114,128,.25); }
+
+.info-row { display: flex; align-items: flex-start; gap: .5rem; padding: .45rem 0;
+             border-bottom: 1px solid #F3F4F6; font-size: .9rem; }
+.info-row:last-child { border-bottom: none; }
+.info-row .info-label { min-width: 130px; color: #6B7280; font-size: .8rem; font-weight: 600;
+                          text-transform: uppercase; letter-spacing: .3px; padding-top: 2px; }
+.info-row .info-value { color: #2F3A4A; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-3 text-center mb-4">
+<div class="row g-4">
+
+    <!-- ── Portada ── -->
+    <div class="col-md-3 col-sm-4">
         {% if libro.portada %}
-            <img src="{{ libro.portada.url }}" class="img-fluid rounded shadow" alt="{{ libro.titulo }}">
+            <img src="{{ libro.portada.url }}"
+                 class="img-fluid rounded shadow"
+                 alt="{{ libro.titulo }}"
+                 style="width:100%; max-height:340px; object-fit:cover; border-radius:16px;">
         {% else %}
-            <div class="bg-light rounded d-flex align-items-center justify-content-center"
-                 style="height:300px;">
-                <i class="bi bi-book text-secondary" style="font-size:5rem;"></i>
+            {% with inicial=libro.titulo|slice:":1"|upper pk=libro.pk %}
+            {% if pk|divisibleby:7 %}
+            <div class="portada-grande" style="background:linear-gradient(145deg,#1e3a5f,#2d6a9f);">
+            {% elif pk|divisibleby:6 %}
+            <div class="portada-grande" style="background:linear-gradient(145deg,#4a1a6e,#7c3aed);">
+            {% elif pk|divisibleby:5 %}
+            <div class="portada-grande" style="background:linear-gradient(145deg,#2d5a27,#3a9d7c);">
+            {% elif pk|divisibleby:4 %}
+            <div class="portada-grande" style="background:linear-gradient(145deg,#0e4d7a,#0891b2);">
+            {% elif pk|divisibleby:3 %}
+            <div class="portada-grande" style="background:linear-gradient(145deg,#7a2020,#c0392b);">
+            {% elif pk|divisibleby:2 %}
+            <div class="portada-grande" style="background:linear-gradient(145deg,#6b4226,#b05d2a);">
+            {% else %}
+            <div class="portada-grande" style="background:linear-gradient(145deg,#374151,#6B7280);">
+            {% endif %}
+                <i class="bi bi-book-fill portada-icono-g"></i>
+                <span class="portada-inicial-g">{{ inicial }}</span>
             </div>
+            {% endwith %}
         {% endif %}
+
+        <!-- Estado del libro bajo la portada -->
+        <div class="text-center mt-3">
+            <span class="info-chip
+                {% if libro.estado == 'disponible' %}chip-disponible
+                {% elif libro.estado == 'prestado' %}chip-prestado
+                {% elif libro.estado == 'reservado' %}chip-reservado
+                {% else %}chip-otro{% endif %}">
+                <i class="bi bi-circle-fill me-1" style="font-size:.45rem;"></i>
+                {{ libro.get_estado_display }}
+            </span>
+        </div>
+
+        <!-- Acciones -->
+        <div class="d-flex flex-column gap-2 mt-3">
+            {% if libro.esta_disponible and not user.es_bibliotecario %}
+            <a href="{% url 'prestamos:crear_reserva' libro.pk %}" class="btn btn-success w-100">
+                <i class="bi bi-bookmark-plus me-2"></i>Reservar
+            </a>
+            {% endif %}
+            {% if user.es_bibliotecario %}
+            <a href="{% url 'catalogo:libro_editar' libro.pk %}" class="btn btn-warning w-100">
+                <i class="bi bi-pencil me-2"></i>Editar
+            </a>
+            <a href="{% url 'catalogo:libro_eliminar' libro.pk %}" class="btn btn-danger w-100">
+                <i class="bi bi-trash me-2"></i>Eliminar
+            </a>
+            {% endif %}
+            <a href="{% url 'catalogo:libro_lista' %}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-arrow-left me-2"></i>Volver al catálogo
+            </a>
+        </div>
     </div>
-    <div class="col-md-9">
+
+    <!-- ── Información ── -->
+    <div class="col-md-9 col-sm-8">
         <div class="card p-4">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <h3 class="fw-bold">{{ libro.titulo }}</h3>
-                    <p class="text-muted">
-                        {% for autor in libro.autores.all %}
-                            <a href="{% url 'catalogo:autor_detalle' autor.pk %}">{{ autor }}</a>
-                            {% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
-                </div>
-                <span class="badge fs-6
-                    {% if libro.estado == 'disponible' %}bg-success
-                    {% elif libro.estado == 'prestado' %}bg-warning text-dark
-                    {% else %}bg-danger{% endif %}">
-                    {{ libro.get_estado_display }}
+
+            <!-- Título y autores -->
+            <h3 class="fw-bold mb-1" style="color:#2F3A4A;">{{ libro.titulo }}</h3>
+            <p class="text-muted mb-3" style="font-size:.95rem;">
+                <i class="bi bi-person me-1"></i>
+                {% for autor in libro.autores.all %}
+                    <a href="{% url 'catalogo:autor_detalle' autor.pk %}"
+                       class="text-decoration-none fw-semibold" style="color:#4A90D9;">{{ autor }}</a>
+                    {% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    <span class="text-muted">Autor desconocido</span>
+                {% endfor %}
+            </p>
+
+            <!-- Categorías -->
+            {% if libro.categorias.all %}
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                {% for cat in libro.categorias.all %}
+                <span class="badge" style="background:{{ cat.color }}20; color:{{ cat.color }}; border:1px solid {{ cat.color }}40; font-size:.78rem; padding:5px 12px;">
+                    <i class="bi bi-tag me-1"></i>{{ cat.nombre }}
                 </span>
+                {% endfor %}
             </div>
-
-            <hr>
-            <div class="row">
-                <div class="col-sm-6">
-                    <p><strong>ISBN:</strong> {{ libro.isbn }}</p>
-                    <p><strong>Editorial:</strong> {{ libro.editorial|default:"—" }}</p>
-                    <p><strong>Año:</strong> {{ libro.anio_publicacion|default:"—" }}</p>
-                    <p><strong>Tipo:</strong> {{ libro.get_tipo_display }}</p>
-                </div>
-                <div class="col-sm-6">
-                    <p><strong>Ejemplares totales:</strong> {{ libro.cantidad_ejemplares }}</p>
-                    <p><strong>Disponibles:</strong>
-                        <span class="fw-bold {% if libro.ejemplares_disponibles > 0 %}text-success{% else %}text-danger{% endif %}">
-                            {{ libro.ejemplares_disponibles }}
-                        </span>
-                    </p>
-                    <p><strong>Ubicación:</strong> {{ libro.ubicacion|default:"—" }}</p>
-                    <p><strong>Categorías:</strong>
-                        {% for cat in libro.categorias.all %}
-                            <span class="badge" style="background-color: {{ cat.color }};">{{ cat.nombre }}</span>
-                        {% endfor %}
-                    </p>
-                </div>
-            </div>
-
-            {% if libro.descripcion %}
-            <p class="mt-2"><strong>Descripción:</strong></p>
-            <p class="text-muted">{{ libro.descripcion }}</p>
             {% endif %}
 
-            <div class="d-flex gap-2 mt-3">
-                {% if libro.esta_disponible and not user.es_bibliotecario %}
-                <a href="{% url 'prestamos:crear_reserva' libro.pk %}" class="btn btn-success">
-                    <i class="bi bi-bookmark-plus me-2"></i>Reservar
-                </a>
+            <hr style="border-color:#F3F4F6;">
+
+            <!-- Detalles técnicos -->
+            <div class="mb-3">
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-upc me-1"></i>ISBN</span>
+                    <span class="info-value"><code>{{ libro.isbn }}</code></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-building me-1"></i>Editorial</span>
+                    <span class="info-value">{{ libro.editorial|default:"—" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-calendar me-1"></i>Año</span>
+                    <span class="info-value">{{ libro.anio_publicacion|default:"—" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-layers me-1"></i>Tipo</span>
+                    <span class="info-value">{{ libro.get_tipo_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-boxes me-1"></i>Ejemplares</span>
+                    <span class="info-value">
+                        {{ libro.cantidad_ejemplares }} total
+                        &nbsp;·&nbsp;
+                        <strong class="{% if libro.ejemplares_disponibles > 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ libro.ejemplares_disponibles }} disponible(s)
+                        </strong>
+                    </span>
+                </div>
+                {% if libro.ubicacion %}
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-geo-alt me-1"></i>Ubicación</span>
+                    <span class="info-value">{{ libro.ubicacion }}</span>
+                </div>
                 {% endif %}
-                {% if user.es_bibliotecario %}
-                <a href="{% url 'catalogo:libro_editar' libro.pk %}" class="btn btn-warning">
-                    <i class="bi bi-pencil me-2"></i>Editar
-                </a>
-                <a href="{% url 'catalogo:libro_eliminar' libro.pk %}" class="btn btn-danger">
-                    <i class="bi bi-trash me-2"></i>Eliminar
-                </a>
-                {% endif %}
-                <a href="{% url 'catalogo:libro_lista' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
-                </a>
             </div>
+
+            <!-- Descripción -->
+            {% if libro.descripcion %}
+            <div class="mt-2">
+                <p class="fw-semibold mb-1" style="color:#2F3A4A; font-size:.9rem;">
+                    <i class="bi bi-text-paragraph me-1"></i>Descripción
+                </p>
+                <p class="text-muted" style="font-size:.9rem; line-height:1.6;">{{ libro.descripcion }}</p>
+            </div>
+            {% endif %}
+
         </div>
     </div>
 </div>

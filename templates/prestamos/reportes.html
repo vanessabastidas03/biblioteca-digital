@@ -5,7 +5,7 @@
 {% block extra_css %}
 <style>
     .reporte-header {
-        background: linear-gradient(135deg, #5c3d2e 0%, #1e3a5f 100%);
+        background: linear-gradient(135deg, #2F3A4A 0%, #1e3a5f 100%);
         border-radius: 14px;
         padding: 1.5rem 2rem;
         margin-bottom: 1.5rem;
@@ -26,13 +26,19 @@
     }
     .btn-export-excel:hover { background: linear-gradient(135deg, #145a24, #1e8449); color: white; transform: translateY(-1px); }
 
+    .btn-export-csv {
+        background: linear-gradient(135deg, #5f4b8b, #7c5cbf);
+        border: none; color: white;
+    }
+    .btn-export-csv:hover { background: linear-gradient(135deg, #4a3a6e, #6a4eab); color: white; transform: translateY(-1px); }
+
     .badge-activo     { background-color: #27ae60; }
     .badge-devuelto   { background-color: #7f8c8d; }
     .badge-retrasado  { background-color: #c0392b; }
     .badge-renovado   { background-color: #2980b9; }
 
     .total-badge {
-        background: linear-gradient(135deg, #c9a84c, #e8a020);
+        background: linear-gradient(135deg, #4A90D9, #7C5CBF);
         color: white;
         font-size: 1rem;
         padding: 6px 18px;
@@ -59,7 +65,7 @@
         padding: 3.5rem 1rem;
         color: #aaa;
     }
-    .empty-state i { font-size: 3rem; color: #c9a84c; opacity: .6; }
+    .empty-state i { font-size: 3rem; color: #4A90D9; opacity: .6; }
 </style>
 {% endblock %}
 
@@ -81,6 +87,11 @@
            id="btn-excel"
            class="btn btn-export-excel px-3">
             <i class="bi bi-file-earmark-excel me-1"></i> Exportar Excel
+        </a>
+        <a href="?{{ request.GET.urlencode }}&format=csv"
+           id="btn-csv"
+           class="btn btn-export-csv px-3">
+            <i class="bi bi-filetype-csv me-1"></i> Exportar CSV
         </a>
     </div>
 </div>
@@ -139,6 +150,10 @@
            class="btn btn-export-excel btn-sm px-3">
             <i class="bi bi-file-earmark-excel me-1"></i>Excel
         </a>
+        <a href="{% url 'prestamos:exportar_csv' %}?{{ request.GET.urlencode }}"
+           class="btn btn-export-csv btn-sm px-3">
+            <i class="bi bi-filetype-csv me-1"></i>CSV
+        </a>
     </div>
 </div>
 
@@ -165,7 +180,7 @@
 
                     <td>
                         <a href="{% url 'catalogo:libro_detalle' p.libro.pk %}"
-                           class="fw-semibold text-decoration-none" style="color:#5c3d2e;">
+                           class="fw-semibold text-decoration-none" style="color:#2F3A4A;">
                             {{ p.libro.titulo|truncatechars:45 }}
                         </a>
                     </td>
@@ -173,7 +188,7 @@
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                                 style="width:32px;height:32px;background:linear-gradient(135deg,#5c3d2e,#c9a84c);font-size:.78rem;flex-shrink:0;">
+                                 style="width:32px;height:32px;background:linear-gradient(135deg,#2F3A4A,#4A90D9);font-size:.78rem;flex-shrink:0;">
                                 {{ p.usuario.first_name|first|upper }}{{ p.usuario.last_name|first|upper }}
                             </div>
                             <div>
@@ -224,7 +239,7 @@
                     <td colspan="8">
                         <div class="empty-state">
                             <i class="bi bi-inbox"></i>
-                            <p class="mt-3 mb-1 fs-5 fw-semibold" style="color:#5c3d2e;">No se encontraron préstamos</p>
+                            <p class="mt-3 mb-1 fs-5 fw-semibold" style="color:#2F3A4A;">No se encontraron préstamos</p>
                             <p class="small text-muted">Intenta cambiar los filtros de búsqueda.</p>
                             <a href="{% url 'prestamos:reportes' %}" class="btn btn-outline-secondary btn-sm mt-1">
                                 <i class="bi bi-x-circle me-1"></i>Limpiar filtros
@@ -250,16 +265,20 @@
         const btnPdf = document.getElementById('btn-pdf');
         const btnExcel = document.getElementById('btn-excel');
 
-        const pdfUrl = new URL("{% url 'prestamos:exportar_pdf' %}", window.location.origin);
+        const pdfUrl   = new URL("{% url 'prestamos:exportar_pdf' %}",   window.location.origin);
         const excelUrl = new URL("{% url 'prestamos:exportar_excel' %}", window.location.origin);
+        const csvUrl   = new URL("{% url 'prestamos:exportar_csv' %}",   window.location.origin);
 
         params.forEach((v, k) => {
             pdfUrl.searchParams.set(k, v);
             excelUrl.searchParams.set(k, v);
+            csvUrl.searchParams.set(k, v);
         });
 
         if (btnPdf)   btnPdf.href   = pdfUrl.toString();
         if (btnExcel) btnExcel.href = excelUrl.toString();
+        const btnCsv = document.getElementById('btn-csv');
+        if (btnCsv)   btnCsv.href   = csvUrl.toString();
     });
 </script>
 {% endblock %}

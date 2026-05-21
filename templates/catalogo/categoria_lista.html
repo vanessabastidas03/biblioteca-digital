@@ -17,7 +17,7 @@
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="categoria-color" style="background-color:{{ cat.color }};"></div>
                 <div class="flex-grow-1">
-                    <h6 class="mb-0 fw-bold" style="color:#5c3d2e;">{{ cat.nombre }}</h6>
+                    <h6 class="mb-0 fw-bold" style="color:#2F3A4A;">{{ cat.nombre }}</h6>
                     <small class="text-muted">
                         <i class="bi bi-journals me-1"></i>{{ cat.libros.count }} libro(s)
                     </small>
@@ -38,7 +38,7 @@
     </div>
     {% empty %}
     <div class="col-12 text-center text-muted py-5">
-        <i class="bi bi-tags" style="font-size:2.5rem;color:#c9a84c;opacity:.6;"></i>
+        <i class="bi bi-tags" style="font-size:2.5rem;color:#4A90D9;opacity:.6;"></i>
         <p class="mt-2 mb-0">No hay categorías registradas.</p>
     </div>
     {% endfor %}

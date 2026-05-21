@@ -1,81 +1,239 @@
 {% extends 'base.html' %}
-{% block title %}Libros{% endblock %}
+{% block title %}Libros — Biblioteca Digital{% endblock %}
 {% block page_title %}Catálogo de Libros{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Portada placeholder dinámica ──────────────────────────────── */
+.portada-placeholder {
+    height: 190px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px 14px 0 0;
+    position: relative;
+    overflow: hidden;
+}
+.portada-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    opacity: .9;
+}
+.portada-placeholder .portada-icono {
+    font-size: 3rem;
+    color: rgba(255,255,255,.7);
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+}
+.portada-placeholder .portada-inicial {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: rgba(255,255,255,.13);
+    line-height: 1;
+    z-index: 1;
+    font-family: Georgia, serif;
+}
+
+/* ── Tarjeta libro ──────────────────────────────────────────────── */
+.libro-card {
+    transition: transform .28s cubic-bezier(.4,0,.2,1), box-shadow .28s, border-color .28s !important;
+    height: 100%;
+}
+.libro-card:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 12px 32px rgba(74,144,217,.18) !important;
+    border-color: #A7C7E7 !important;
+}
+.libro-card .card-body {
+    padding: .9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 130px;
+}
+.libro-card .card-title {
+    font-size: .88rem;
+    font-weight: 700;
+    color: #2F3A4A;
+    margin-bottom: .25rem;
+    line-height: 1.3;
+    /* Dos líneas máximo */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.libro-card .libro-autor {
+    font-size: .75rem;
+    color: #6B7280;
+    margin-bottom: .3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.libro-card .libro-categorias {
+    font-size: .7rem;
+    color: #9CA3AF;
+    margin-bottom: .5rem;
+}
+.libro-card .estado-badge {
+    font-size: .7rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+.libro-card img.card-img-top {
+    height: 190px;
+    object-fit: cover;
+    border-radius: 14px 14px 0 0;
+}
+
+/* ── Panel de filtros ───────────────────────────────────────────── */
+.filtros-card .card-body { padding: .85rem 1rem; }
+
+/* ── Empty state ────────────────────────────────────────────────── */
+.empty-catalogo {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+.empty-catalogo i { font-size: 4rem; color: #A7C7E7; opacity: .7; }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- Filtros -->
-<div class="card mb-4">
+
+<!-- ── Filtros ── -->
+<div class="filtros-card card mb-3">
     <div class="card-body">
         <form method="get" class="row g-2 align-items-end">
-            <div class="col-md-4">{{ form_filtro.q }}</div>
+            <div class="col-md-4">
+                {{ form_filtro.q }}
+            </div>
             <div class="col-md-3">{{ form_filtro.categoria }}</div>
             <div class="col-md-2">{{ form_filtro.estado }}</div>
             <div class="col-md-2">{{ form_filtro.tipo }}</div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-primary w-100">
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-primary flex-grow-1">
                     <i class="bi bi-search"></i>
                 </button>
+                <a href="{% url 'catalogo:libro_lista' %}" class="btn btn-outline-secondary" title="Limpiar">
+                    <i class="bi bi-x-lg"></i>
+                </a>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Encabezado con contador y botón crear -->
+<!-- ── Encabezado ── -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <span class="text-muted">
-        <i class="bi bi-journals me-1" style="color:#c9a84c;"></i>
-        <strong>{{ libros.count }}</strong> libro(s) encontrado(s)
+    <span style="color:#6B7280; font-size:.88rem;">
+        <i class="bi bi-journals me-1" style="color:#4A90D9;"></i>
+        <strong style="color:#2F3A4A;">{{ libros.count }}</strong> libro(s) encontrado(s)
     </span>
     {% if user.es_bibliotecario %}
-    <a href="{% url 'catalogo:libro_crear' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-2"></i>Nuevo libro
+    <a href="{% url 'catalogo:libro_crear' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i>Nuevo libro
     </a>
     {% endif %}
 </div>
 
-<!-- Grid de libros -->
-<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+<!-- ── Grid de libros ── -->
+<div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
     {% for libro in libros %}
+    {% with titulo_inicial=libro.titulo|slice:":1"|upper %}
     <div class="col">
-        <div class="card h-100 libro-card">
+        <div class="card libro-card">
+
+            <!-- Portada o placeholder por color/inicial -->
             {% if libro.portada %}
-                <img src="{{ libro.portada.url }}" class="card-img-top" alt="{{ libro.titulo }}"
-                     style="height:200px; object-fit:cover;">
+                <img src="{{ libro.portada.url }}"
+                     class="card-img-top"
+                     alt="{{ libro.titulo }}">
             {% else %}
-                <div class="libro-placeholder">
-                    <i class="bi bi-book"></i>
+                {% with idx=forloop.counter0 %}
+                {% if idx|divisibleby:7 %}
+                <div class="portada-placeholder" style="background: linear-gradient(145deg,#1e3a5f,#2d6a9f);">
+                {% elif idx|divisibleby:6 %}
+                <div class="portada-placeholder" style="background: linear-gradient(145deg,#4a1a6e,#7c3aed);">
+                {% elif idx|divisibleby:5 %}
+                <div class="portada-placeholder" style="background: linear-gradient(145deg,#2d5a27,#3a9d7c);">
+                {% elif idx|divisibleby:4 %}
+                <div class="portada-placeholder" style="background: linear-gradient(145deg,#0e4d7a,#0891b2);">
+                {% elif idx|divisibleby:3 %}
+                <div class="portada-placeholder" style="background: linear-gradient(145deg,#7a2020,#c0392b);">
+                {% elif idx|divisibleby:2 %}
+                <div class="portada-placeholder" style="background: linear-gradient(145deg,#6b4226,#b05d2a);">
+                {% else %}
+                <div class="portada-placeholder" style="background: linear-gradient(145deg,#374151,#6B7280);">
+                {% endif %}
+                    <i class="bi bi-book-fill portada-icono"></i>
+                    <span class="portada-inicial">{{ titulo_inicial }}</span>
                 </div>
+                {% endwith %}
             {% endif %}
-            <div class="card-body d-flex flex-column">
-                <h6 class="card-title fw-bold" style="color:#5c3d2e;">{{ libro.titulo }}</h6>
-                <p class="card-text text-muted small mb-2">
+
+            <div class="card-body">
+                <div class="card-title">{{ libro.titulo }}</div>
+
+                <p class="libro-autor">
                     <i class="bi bi-person me-1"></i>
                     {% for autor in libro.autores.all %}{{ autor }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    {% if not libro.autores.all %}—{% endif %}
                 </p>
-                <div class="mt-auto">
-                    <span class="badge
-                        {% if libro.estado == 'disponible' %}bg-success
-                        {% elif libro.estado == 'prestado' %}bg-warning text-dark
-                        {% else %}bg-danger{% endif %} mb-2">
-                        <i class="bi bi-circle-fill me-1" style="font-size:.5rem;"></i>
+
+                {% with cat=libro.categorias.all|first %}
+                {% if cat %}
+                <p class="libro-categorias">
+                    <i class="bi bi-tag me-1"></i>{{ cat.nombre }}
+                </p>
+                {% endif %}
+                {% endwith %}
+
+                <div class="mt-auto d-flex flex-column gap-1">
+                    <span class="estado-badge d-inline-block
+                        {% if libro.estado == 'disponible' %}text-success" style="background:rgba(58,157,124,.12);"
+                        {% elif libro.estado == 'prestado' %}text-warning" style="background:rgba(224,123,57,.12);"
+                        {% elif libro.estado == 'reservado' %}text-info" style="background:rgba(8,145,178,.12);"
+                        {% else %}text-danger" style="background:rgba(192,57,43,.12);"
+                        {% endif %}>
+                        <i class="bi bi-circle-fill me-1" style="font-size:.45rem; vertical-align:middle;"></i>
                         {{ libro.get_estado_display }}
                     </span>
                     <a href="{% url 'catalogo:libro_detalle' libro.pk %}"
-                       class="btn btn-outline-primary btn-sm w-100">
+                       class="btn btn-outline-primary btn-sm w-100 mt-1">
                         <i class="bi bi-eye me-1"></i>Ver detalle
                     </a>
                 </div>
             </div>
         </div>
     </div>
+    {% endwith %}
+
     {% empty %}
-    <div class="col-12 text-center py-5 text-muted">
-        <i class="bi bi-search" style="font-size:3rem; color:#c9a84c; opacity:.7;"></i>
-        <p class="mt-3 fs-5">No se encontraron libros con los filtros aplicados.</p>
-        <a href="{% url 'catalogo:libro_lista' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-x-circle me-1"></i>Limpiar filtros
-        </a>
+    <div class="col-12">
+        <div class="empty-catalogo">
+            <i class="bi bi-search"></i>
+            <h5 class="mt-3" style="color:#2F3A4A;">No se encontraron libros</h5>
+            <p class="text-muted small">Intenta con otros filtros o agrega libros al catálogo.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'catalogo:libro_lista' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-circle me-1"></i>Limpiar filtros
+                </a>
+                {% if user.es_bibliotecario %}
+                <a href="{% url 'catalogo:libro_crear' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar libro
+                </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
     {% endfor %}
 </div>
+
 {% endblock %}

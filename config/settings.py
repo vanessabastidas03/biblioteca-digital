@@ -90,7 +90,33 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# En desarrollo usa almacenamiento simple (no requiere collectstatic).
+# En producción usa el comprimido con manifest de whitenoise.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if DEBUG
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
+
+# Silenciar advertencias de seguridad en desarrollo (se activan en producción con DEBUG=False)
+if DEBUG:
+    SILENCED_SYSTEM_CHECKS = [
+        'security.W004',  # HSTS — solo necesario con SSL/producción
+        'security.W008',  # SSL redirect — solo producción
+        'security.W009',  # SECRET_KEY length — el .env de producción tendrá clave larga
+        'security.W012',  # SESSION_COOKIE_SECURE — solo producción
+        'security.W016',  # CSRF_COOKIE_SECURE — solo producción
+        'security.W018',  # DEBUG=True — esperado en desarrollo
+        'security.W019',  # X-Frame-Options — configurado en middleware
+    ]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -103,8 +129,14 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/dashboard/'   # dashboard/views.py redirige lectores a /dashboard/lector/
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
-# Email (configurar más adelante)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email — consola para desarrollo, SMTP para producción
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='biblioteca@demo.com')
+EMAIL_HOST = config('EMAIL_HOST', default='')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')

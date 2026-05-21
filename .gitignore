@@ -21,3 +21,4 @@ media/
 
 # Mac
 .DS_Store
+staticfiles/

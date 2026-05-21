@@ -31,11 +31,11 @@
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                                 style="width:36px;height:36px;background:linear-gradient(135deg,#5c3d2e,#c9a84c);font-size:.85rem;flex-shrink:0;">
+                                 style="width:36px;height:36px;background:linear-gradient(135deg,#2F3A4A,#4A90D9);font-size:.85rem;flex-shrink:0;">
                                 {{ autor.nombre|first|upper }}{{ autor.apellido|first|upper }}
                             </div>
                             <div>
-                                <a href="{% url 'catalogo:autor_detalle' autor.pk %}" class="fw-bold text-decoration-none" style="color:#5c3d2e;">
+                                <a href="{% url 'catalogo:autor_detalle' autor.pk %}" class="fw-bold text-decoration-none" style="color:#2F3A4A;">
                                     {{ autor }}
                                 </a>
                             </div>
@@ -48,7 +48,7 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge" style="background:rgba(92,61,46,0.12);color:#5c3d2e;">
+                        <span class="badge" style="background:rgba(74,144,217,0.12);color:#2F3A4A;">
                             {{ autor.libros.count }} libro(s)
                         </span>
                     </td>
@@ -66,7 +66,7 @@
                 {% empty %}
                 <tr>
                     <td colspan="4" class="text-center text-muted py-5">
-                        <i class="bi bi-person-x" style="font-size:2.5rem;color:#c9a84c;opacity:.6;"></i>
+                        <i class="bi bi-person-x" style="font-size:2.5rem;color:#4A90D9;opacity:.6;"></i>
                         <p class="mt-2 mb-0">No hay autores registrados.</p>
                     </td>
                 </tr>

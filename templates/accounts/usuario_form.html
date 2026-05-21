@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block title %}Editar usuario — {{ usuario_editar.get_full_name }}{% endblock %}
+{% block page_title %}Editar Usuario{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">
+        <i class="bi bi-pencil-square me-2 text-primary"></i>
+        Editar datos de usuario
+    </h5>
+    <a href="{% url 'accounts:usuario_detalle' usuario_editar.pk %}"
+       class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Volver al detalle
+    </a>
+</div>
+
+{% if es_mi_cuenta %}
+<div class="alert alert-info d-flex align-items-center gap-2 mb-3" role="alert">
+    <i class="bi bi-info-circle-fill fs-5"></i>
+    <div>
+        Estás editando <strong>tu propia cuenta</strong>.
+        No puedes cambiar tu rol ni desactivar tu cuenta desde aquí.
+    </div>
+</div>
+{% endif %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-transparent border-bottom d-flex align-items-center gap-2"
+                 style="font-weight:700;font-size:.9rem;color:#2F3A4A;padding:.9rem 1.2rem;">
+                <!-- Avatar pequeño -->
+                <div style="width:34px;height:34px;border-radius:50%;flex-shrink:0;
+                            background:linear-gradient(135deg,#4A90D9,#7C5CBF);
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:.85rem;font-weight:800;color:#fff;">
+                    {{ usuario_editar.first_name|first|upper }}{{ usuario_editar.last_name|first|upper }}
+                </div>
+                {{ usuario_editar.get_full_name|default:usuario_editar.username }}
+                <span class="badge ms-1 {% if usuario_editar.es_bibliotecario %}bg-primary{% else %}bg-secondary{% endif %}">
+                    {{ usuario_editar.get_rol_display }}
+                </span>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <!-- Nombre -->
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">
+                                <i class="bi bi-person me-1 text-muted"></i>Nombre
+                            </label>
+                            <input type="text"
+                                   name="first_name"
+                                   class="form-control"
+                                   value="{{ usuario_editar.first_name }}"
+                                   placeholder="Nombre"
+                                   maxlength="150">
+                        </div>
+
+                        <!-- Apellido -->
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">
+                                <i class="bi bi-person me-1 text-muted"></i>Apellido
+                            </label>
+                            <input type="text"
+                                   name="last_name"
+                                   class="form-control"
+                                   value="{{ usuario_editar.last_name }}"
+                                   placeholder="Apellido"
+                                   maxlength="150">
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">
+                                <i class="bi bi-envelope me-1 text-muted"></i>Correo electrónico
+                            </label>
+                            <input type="email"
+                                   name="email"
+                                   class="form-control"
+                                   value="{{ usuario_editar.email }}"
+                                   placeholder="correo@ejemplo.com"
+                                   maxlength="254">
+                        </div>
+
+                        {% if not es_mi_cuenta %}
+                        <!-- Rol -->
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">
+                                <i class="bi bi-shield me-1 text-muted"></i>Rol
+                            </label>
+                            <select name="rol" class="form-select">
+                                {% for valor, etiqueta in roles %}
+                                <option value="{{ valor }}"
+                                    {% if usuario_editar.rol == valor %}selected{% endif %}>
+                                    {{ etiqueta }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Estado activo -->
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">
+                                <i class="bi bi-toggle-on me-1 text-muted"></i>Estado de la cuenta
+                            </label>
+                            <select name="is_active" class="form-select">
+                                <option value="1" {% if usuario_editar.is_active %}selected{% endif %}>
+                                    Activa
+                                </option>
+                                <option value="0" {% if not usuario_editar.is_active %}selected{% endif %}>
+                                    Desactivada
+                                </option>
+                            </select>
+                            <div class="form-text text-muted" style="font-size:.75rem;">
+                                Desactivar impide el inicio de sesión.
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- Rol y estado: solo lectura para mi cuenta -->
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">
+                                <i class="bi bi-shield me-1 text-muted"></i>Rol
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ usuario_editar.get_rol_display }}"
+                                   readonly
+                                   style="background:#F8F7FF;color:#6B7280;">
+                            <div class="form-text text-muted" style="font-size:.75rem;">
+                                No puedes cambiar tu propio rol.
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">
+                                <i class="bi bi-toggle-on me-1 text-muted"></i>Estado de la cuenta
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   value="Activa"
+                                   readonly
+                                   style="background:#F8F7FF;color:#6B7280;">
+                            <div class="form-text text-muted" style="font-size:.75rem;">
+                                No puedes desactivar tu propia cuenta.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-4" style="border-color:#F1F5F9;">
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'accounts:usuario_detalle' usuario_editar.pk %}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-floppy me-1"></i>Guardar cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
