@@ -11,6 +11,7 @@ from .models import Reserva, Prestamo, Sancion
 from .forms import FormularioReserva, FormularioPrestamo, FiltroPrestamoForm
 
 # Imports para exportación
+import csv
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.lib.units import cm
@@ -560,4 +561,36 @@ def exportar_excel(request):
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     response['Content-Disposition'] = 'attachment; filename="reporte_prestamos.xlsx"'
+    return response
+
+
+@login_required
+def exportar_csv(request):
+    """Exporta los préstamos filtrados como CSV — solo bibliotecarios."""
+    if not request.user.es_bibliotecario:
+        return HttpResponse('Acceso denegado.', status=403)
+
+    prestamos, _ = _aplicar_filtros_reporte(request)
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="reporte_prestamos.csv"'
+    response.write('﻿')  # BOM para Excel
+
+    writer = csv.writer(response)
+    writer.writerow(['#', 'Libro', 'Usuario', 'Fecha préstamo', 'Vencimiento', 'Devolución', 'Estado', 'Días retraso'])
+
+    ESTADOS = {'activo': 'Activo', 'devuelto': 'Devuelto', 'retrasado': 'Retrasado', 'renovado': 'Renovado'}
+    for i, p in enumerate(prestamos, start=1):
+        devolucion = p.fecha_devolucion.strftime('%d/%m/%Y') if p.fecha_devolucion else ''
+        writer.writerow([
+            i,
+            p.libro.titulo,
+            p.usuario.get_full_name() or p.usuario.username,
+            p.fecha_prestamo.strftime('%d/%m/%Y'),
+            p.fecha_vencimiento.strftime('%d/%m/%Y'),
+            devolucion,
+            ESTADOS.get(p.estado, p.estado),
+            p.dias_retraso if p.dias_retraso else '',
+        ])
+
     return response
