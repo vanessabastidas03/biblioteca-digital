@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Libros{% endblock %}
+{% block page_title %}Catálogo de Libros{% endblock %}
+
+{% block content %}
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">{{ form_filtro.q }}</div>
+            <div class="col-md-3">{{ form_filtro.categoria }}</div>
+            <div class="col-md-2">{{ form_filtro.estado }}</div>
+            <div class="col-md-2">{{ form_filtro.tipo }}</div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Botón crear (solo bibliotecarios) -->
+{% if user.es_bibliotecario %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted">{{ libros.count }} libro(s) encontrado(s)</span>
+    <a href="{% url 'catalogo:libro_crear' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i>Nuevo libro
+    </a>
+</div>
+{% endif %}
+
+<!-- Grid de libros -->
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+    {% for libro in libros %}
+    <div class="col">
+        <div class="card h-100">
+            {% if libro.portada %}
+                <img src="{{ libro.portada.url }}" class="card-img-top" alt="{{ libro.titulo }}"
+                     style="height:200px; object-fit:cover;">
+            {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center"
+                     style="height:200px;">
+                    <i class="bi bi-book text-secondary" style="font-size:3rem;"></i>
+                </div>
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+                <h6 class="card-title fw-bold">{{ libro.titulo }}</h6>
+                <p class="card-text text-muted small">
+                    {% for autor in libro.autores.all %}{{ autor }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </p>
+                <div class="mt-auto">
+                    <span class="badge
+                        {% if libro.estado == 'disponible' %}bg-success
+                        {% elif libro.estado == 'prestado' %}bg-warning text-dark
+                        {% else %}bg-danger{% endif %}">
+                        {{ libro.get_estado_display }}
+                    </span>
+                    <a href="{% url 'catalogo:libro_detalle' libro.pk %}"
+                       class="btn btn-outline-primary btn-sm w-100 mt-2">Ver detalle</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-search" style="font-size:3rem;"></i>
+        <p class="mt-2">No se encontraron libros con los filtros aplicados.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

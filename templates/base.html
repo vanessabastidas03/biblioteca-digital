@@ -66,22 +66,21 @@
                 {% endif %}
                 <li class="nav-item">
                     <a class="nav-link {% if 'prestamos' in request.path %}active{% endif %}"
-                       href="{% url 'prestamos:lista' %}">
+                       href="{% url 'catalogo:libro_lista' %}">
                         <i class="bi bi-arrow-left-right"></i> Préstamos
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if 'reservas' in request.path %}active{% endif %}"
-                       href="{% url 'prestamos:reservas' %}">
+                       href="{% url 'catalogo:libro_lista' %}">
                         <i class="bi bi-bookmark-check"></i> Reservas
                     </a>
                 </li>
                 {% if user.es_bibliotecario %}
-                <li class="nav-item mt-2">
                     <small class="text-white-50 px-4">ADMINISTRACIÓN</small>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'prestamos:reportes' %}">
+                    <a class="nav-link" href="{% url 'catalogo:libro_lista' %}">
                         <i class="bi bi-file-earmark-bar-graph"></i> Reportes
                     </a>
                 </li>
