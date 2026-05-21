@@ -196,47 +196,91 @@ python manage.py collectstatic
 
 ## Preparación para despliegue (Render / Railway / PythonAnywhere)
 
-### Variables de entorno en producción
+### Variables de entorno en producción (Render)
 
 ```env
 SECRET_KEY=<clave-secreta-larga-y-aleatoria>
 DEBUG=False
-ALLOWED_HOSTS=tu-dominio.com,www.tu-dominio.com
+ALLOWED_HOSTS=.onrender.com
 
-# Base de datos PostgreSQL (Render/Railway proveen DATABASE_URL)
-DATABASE_URL=postgresql://...
-
-# Email SMTP real
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=tu-correo@gmail.com
-EMAIL_HOST_PASSWORD=tu-app-password
-DEFAULT_FROM_EMAIL=tu-correo@gmail.com
+# Render provee DATABASE_URL automáticamente al conectar un servicio PostgreSQL
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DBNAME
 ```
 
-### Archivos de despliegue
+---
 
-- `Procfile` — comando de inicio para Render/Railway (ya incluido)
-- `requirements.txt` — dependencias del proyecto (ya incluido)
-- `whitenoise` — sirve archivos estáticos sin servidor adicional
+## Despliegue en Render
 
-### Pasos antes de desplegar
+### Archivos de despliegue incluidos
+
+| Archivo | Descripción |
+|---|---|
+| `render.yaml` | Configuración declarativa del servicio (web + base de datos) |
+| `build.sh` | Script de construcción: instala deps, collectstatic, migrate |
+| `Procfile` | Comando de inicio: `gunicorn config.wsgi:application` |
+| `runtime.txt` | Versión de Python: `python-3.11.0` |
+| `.env.example` | Plantilla de variables de entorno (copiar como `.env`) |
+
+### Pasos para desplegar en Render
+
+1. **Fork / sube el proyecto a GitHub** (rama `main` o `feature/deploy`).
+
+2. **Crea una cuenta en [render.com](https://render.com)** e inicia sesión.
+
+3. **Opción A — Usando `render.yaml` (recomendado):**
+   - Dashboard → New → Blueprint
+   - Selecciona el repositorio → Render detecta `render.yaml` automáticamente
+   - Revisa las variables de entorno y confirma
+
+4. **Opción B — Manual:**
+   - Dashboard → New → Web Service
+   - Conecta el repositorio
+   - Configura:
+     - **Runtime:** Python 3
+     - **Build Command:** `./build.sh`
+     - **Start Command:** `gunicorn config.wsgi:application`
+   - En Environment Variables agrega:
+     - `SECRET_KEY` → genera una clave segura
+     - `DEBUG` → `False`
+     - `ALLOWED_HOSTS` → `.onrender.com`
+   - Crea un PostgreSQL: New → PostgreSQL → conecta al Web Service
+     - Render inyecta `DATABASE_URL` automáticamente
+
+5. **Primera vez — cargar datos demo** (desde la consola Shell de Render):
+   ```bash
+   python manage.py cargar_datos_demo
+   ```
+
+6. **URL del proyecto:** `https://biblioteca-digital-XXXXX.onrender.com`
+
+### Variables de entorno en el panel de Render
+
+| Variable | Valor en producción |
+|---|---|
+| `SECRET_KEY` | Generado por Render (`generateValue: true`) |
+| `DEBUG` | `False` |
+| `ALLOWED_HOSTS` | `.onrender.com` |
+| `DATABASE_URL` | Automático desde PostgreSQL de Render |
+
+> **Nota:** El tier gratuito de Render tiene el servicio web inactivo si no recibe tráfico por 15 min. La primera visita puede tardar ~30 segundos en responder (cold start).
+
+---
+
+## Usuarios de demostración
+
+| Usuario | Contraseña | Rol |
+|---|---|---|
+| `admin_bib` | `Admin1234!` | Bibliotecario (panel completo) |
+| `lector_juan` | `Lector1234!` | Lector (sin sanciones) |
+| `lector_sofia` | `Lector1234!` | Lector (con sanción activa — demo) |
 
 ```bash
-# 1. Verificar sin errores
-python manage.py check --deploy
-
-# 2. Recolectar estáticos
-python manage.py collectstatic --no-input
-
-# 3. Aplicar migraciones
-python manage.py migrate
+# Crear usuarios demo en producción:
+python manage.py cargar_datos_demo
 ```
 
 ---
 
 ## Autor
 
-Desarrollado como proyecto académico de electiva I por Vanessa Bastidas
+Desarrollado como proyecto académico de gestión de biblioteca digital con Django 6.
