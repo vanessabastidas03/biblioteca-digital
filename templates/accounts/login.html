@@ -1,49 +1,345 @@
 <!-- templates/accounts/login.html -->
 {% extends 'base.html' %}
 
+{% block extra_css %}
+<style>
+/* ── Contenedor ─────────────────────────────────────────────── */
+.login-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #EEF2FF 0%, #F8F7FF 60%, #EDE9FE 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+/* ── Tarjeta principal ──────────────────────────────────────── */
+.login-box {
+    width: 100%;
+    max-width: 440px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(74,144,217,.13), 0 2px 8px rgba(0,0,0,.06);
+    overflow: hidden;
+}
+
+/* ── Cabecera ───────────────────────────────────────────────── */
+.login-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 60%, #7C5CBF 100%);
+    padding: 2rem 2rem 1.6rem;
+    text-align: center;
+    color: #fff;
+}
+.login-header .brand-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: .4rem;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+}
+.login-header h1 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -.3px;
+}
+.login-header .subtitle {
+    font-size: .82rem;
+    color: rgba(255,255,255,.72);
+    margin-top: .25rem;
+}
+
+/* ── Selector de rol (tabs) ─────────────────────────────────── */
+.rol-tabs {
+    display: flex;
+    margin: 1.5rem 1.5rem 0;
+    background: #F1F5F9;
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+}
+.rol-tab {
+    flex: 1;
+    padding: .55rem .5rem;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-size: .82rem;
+    font-weight: 600;
+    color: #6B7280;
+    cursor: pointer;
+    transition: background .2s, color .2s, box-shadow .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    line-height: 1.2;
+    text-align: center;
+}
+.rol-tab.active {
+    background: #fff;
+    color: #1e3a5f;
+    box-shadow: 0 2px 8px rgba(74,144,217,.18);
+}
+.rol-tab.active.tab-lector      { color: #1e5a4a; border-bottom: 3px solid #3A9D7C; }
+.rol-tab.active.tab-bibliotecario { color: #1e3a5f; border-bottom: 3px solid #4A90D9; }
+.rol-tab .tab-icon { font-size: 1.1rem; }
+.rol-tab .tab-label { display: flex; flex-direction: column; }
+.rol-tab .tab-main { font-size: .82rem; font-weight: 700; }
+.rol-tab .tab-sub  { font-size: .68rem; opacity: .7; font-weight: 400; }
+
+/* ── Descripción del rol seleccionado ───────────────────────── */
+.rol-desc {
+    margin: .9rem 1.5rem 0;
+    padding: .6rem .9rem;
+    border-radius: 10px;
+    font-size: .8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    transition: all .25s;
+}
+.rol-desc.lector {
+    background: rgba(58,157,124,.1);
+    color: #1a5e46;
+    border-left: 3px solid #3A9D7C;
+}
+.rol-desc.bibliotecario {
+    background: rgba(74,144,217,.1);
+    color: #1e3a5f;
+    border-left: 3px solid #4A90D9;
+}
+
+/* ── Cuerpo del formulario ──────────────────────────────────── */
+.login-body { padding: 1.2rem 1.5rem 1.8rem; }
+
+.login-body .form-label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: .3rem;
+}
+.login-body .form-control {
+    border-radius: 10px;
+    border: 1.5px solid #E5E7EB;
+    font-size: .88rem;
+    padding: .55rem .85rem;
+    transition: border-color .2s, box-shadow .2s;
+}
+.login-body .form-control:focus {
+    border-color: #4A90D9;
+    box-shadow: 0 0 0 3px rgba(74,144,217,.12);
+}
+
+/* ── Botón de submit ────────────────────────────────────────── */
+.btn-login {
+    width: 100%;
+    padding: .7rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: .92rem;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    margin-top: 1.1rem;
+}
+.btn-login:active { transform: scale(.98); }
+.btn-login.lector {
+    background: linear-gradient(135deg, #2d5a27, #3A9D7C);
+    color: #fff;
+}
+.btn-login.bibliotecario {
+    background: linear-gradient(135deg, #1e3a5f, #4A90D9);
+    color: #fff;
+}
+
+/* ── Pie de tarjeta ─────────────────────────────────────────── */
+.login-footer {
+    padding: 1rem 1.5rem 1.5rem;
+    text-align: center;
+    border-top: 1px solid #F1F5F9;
+    font-size: .82rem;
+    color: #6B7280;
+}
+.login-footer a {
+    color: #4A90D9;
+    font-weight: 700;
+    text-decoration: none;
+}
+.login-footer a:hover { text-decoration: underline; }
+
+/* ── Alerta de error ────────────────────────────────────────── */
+.alert-login {
+    border-radius: 10px;
+    font-size: .82rem;
+    padding: .6rem .9rem;
+    margin-bottom: .8rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+</style>
+{% endblock %}
+
 {% block public_content %}
-<div class="login-wrapper">
-    <div class="login-card">
-        <div class="card p-4 p-md-5">
-            <div class="text-center mb-4">
-                <i class="bi bi-book-half login-icon" style="font-size: 3.5rem; color: #4A90D9;"></i>
-                <h3 class="mt-3 fw-bold" style="color:#2F3A4A;">Biblioteca Digital</h3>
-                <p style="color:#6B7280; font-size:.88rem;">Inicia sesión para continuar</p>
-            </div>
+<div class="login-page">
+    <div class="login-box">
+
+        <!-- Cabecera -->
+        <div class="login-header">
+            <i class="bi bi-book-half brand-icon"></i>
+            <h1>Biblioteca Digital</h1>
+            <p class="subtitle" id="loginSubtitle">
+                Selecciona tu tipo de acceso para continuar
+            </p>
+        </div>
+
+        <!-- Selector de rol -->
+        <div class="rol-tabs" role="tablist" aria-label="Tipo de acceso">
+            <button type="button"
+                    class="rol-tab tab-lector {% if rol_solicitado != 'bibliotecario' %}active{% endif %}"
+                    id="tabLector"
+                    onclick="seleccionarRol('lector')"
+                    aria-pressed="{% if rol_solicitado != 'bibliotecario' %}true{% else %}false{% endif %}">
+                <span class="tab-icon">&#128214;</span>
+                <span class="tab-label">
+                    <span class="tab-main">Lector</span>
+                    <span class="tab-sub">Acceso personal</span>
+                </span>
+            </button>
+            <button type="button"
+                    class="rol-tab tab-bibliotecario {% if rol_solicitado == 'bibliotecario' %}active{% endif %}"
+                    id="tabBibliotecario"
+                    onclick="seleccionarRol('bibliotecario')"
+                    aria-pressed="{% if rol_solicitado == 'bibliotecario' %}true{% else %}false{% endif %}">
+                <span class="tab-icon">&#127963;&#65039;</span>
+                <span class="tab-label">
+                    <span class="tab-main">Bibliotecario</span>
+                    <span class="tab-sub">Panel de administración</span>
+                </span>
+            </button>
+        </div>
+
+        <!-- Descripción dinámica del rol -->
+        <div class="rol-desc {% if rol_solicitado == 'bibliotecario' %}bibliotecario{% else %}lector{% endif %}"
+             id="rolDesc">
+            <i class="bi {% if rol_solicitado == 'bibliotecario' %}bi-shield-check{% else %}bi-person-check{% endif %}"
+               id="rolDescIcon"></i>
+            <span id="rolDescText">
+                {% if rol_solicitado == 'bibliotecario' %}
+                    Accede al panel de gestión de la biblioteca.
+                {% else %}
+                    Consulta el catálogo, reserva y gestiona tus préstamos.
+                {% endif %}
+            </span>
+        </div>
+
+        <!-- Cuerpo: formulario -->
+        <div class="login-body">
 
             {% if messages %}
                 {% for message in messages %}
-                <div class="alert alert-danger py-2 small">
-                    <i class="bi bi-exclamation-circle me-1"></i>{{ message }}
+                <div class="alert-login alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    {{ message }}
                 </div>
                 {% endfor %}
             {% endif %}
 
-            <form method="post">
+            <form method="post" id="loginForm" novalidate>
                 {% csrf_token %}
+                <!-- Campo oculto: rol solicitado -->
+                <input type="hidden" name="rol_solicitado" id="rolSolicitado"
+                       value="{{ rol_solicitado|default:'lector' }}">
+
                 <div class="mb-3">
-                    <label class="form-label">
+                    <label class="form-label" for="{{ form.username.id_for_label }}">
                         <i class="bi bi-person me-1"></i>Usuario
                     </label>
                     {{ form.username }}
                 </div>
-                <div class="mb-4">
-                    <label class="form-label">
+                <div class="mb-1">
+                    <label class="form-label" for="{{ form.password.id_for_label }}">
                         <i class="bi bi-lock me-1"></i>Contraseña
                     </label>
                     {{ form.password }}
                 </div>
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
-                    <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión
+
+                <button type="submit"
+                        class="btn-login {% if rol_solicitado == 'bibliotecario' %}bibliotecario{% else %}lector{% endif %}"
+                        id="btnLogin">
+                    <i class="bi bi-box-arrow-in-right" id="btnIcon"></i>
+                    <span id="btnText">
+                        {% if rol_solicitado == 'bibliotecario' %}
+                            Acceder como Bibliotecario
+                        {% else %}
+                            Acceder como Lector
+                        {% endif %}
+                    </span>
                 </button>
             </form>
-
-            <hr class="my-4" style="border-color: var(--borde, #E5E7EB);">
-            <p class="text-center mb-0" style="font-size:.88rem; color:#6B7280;">
-                ¿No tienes cuenta?
-                <a href="{% url 'accounts:registro' %}" class="fw-bold" style="color:#4A90D9;">Regístrate aquí</a>
-            </p>
         </div>
+
+        <!-- Pie -->
+        <div class="login-footer">
+            ¿No tienes cuenta?
+            <a href="{% url 'accounts:registro' %}">Regístrate aquí</a>
+        </div>
+
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const TEXTOS = {
+    lector: {
+        subtitle : 'Accede a tu espacio personal de lectura',
+        desc     : 'Consulta el catálogo, reserva y gestiona tus préstamos.',
+        descClass: 'lector',
+        descIcon : 'bi-person-check',
+        btnClass : 'lector',
+        btnText  : 'Acceder como Lector',
+    },
+    bibliotecario: {
+        subtitle : 'Acceso restringido al panel de gestión',
+        desc     : 'Accede al panel de gestión de la biblioteca.',
+        descClass: 'bibliotecario',
+        descIcon : 'bi-shield-check',
+        btnClass : 'bibliotecario',
+        btnText  : 'Acceder como Bibliotecario',
+    },
+};
+
+function seleccionarRol(rol) {
+    const info = TEXTOS[rol];
+
+    // Actualizar campo oculto
+    document.getElementById('rolSolicitado').value = rol;
+
+    // Tabs
+    document.getElementById('tabLector').classList.toggle('active', rol === 'lector');
+    document.getElementById('tabBibliotecario').classList.toggle('active', rol === 'bibliotecario');
+    document.getElementById('tabLector').setAttribute('aria-pressed', rol === 'lector');
+    document.getElementById('tabBibliotecario').setAttribute('aria-pressed', rol === 'bibliotecario');
+
+    // Subtítulo
+    document.getElementById('loginSubtitle').textContent = info.subtitle;
+
+    // Descripción
+    const desc = document.getElementById('rolDesc');
+    desc.className = 'rol-desc ' + info.descClass;
+    document.getElementById('rolDescIcon').className = 'bi ' + info.descIcon;
+    document.getElementById('rolDescText').textContent = info.desc;
+
+    // Botón
+    const btn = document.getElementById('btnLogin');
+    btn.className = 'btn-login ' + info.btnClass;
+    document.getElementById('btnText').textContent = info.btnText;
+}
+</script>
 {% endblock %}

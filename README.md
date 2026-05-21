@@ -4,18 +4,46 @@ Sistema de Gestión de Biblioteca Digital desarrollado con Django 6. Permite adm
 
 ---
 
+## Roles de usuario
+
+### 📖 Lector
+- Puede: ver catálogo, buscar libros, reservar, ver sus préstamos y reservas, ver su perfil.
+- No puede: crear/editar/eliminar libros, ver reportes generales, gestionar usuarios.
+- Panel: `/dashboard/lector/`
+- Login demo: `lector_juan` / `Lector1234!`
+
+### 🏛️ Bibliotecario
+- Puede: todo lo anterior + gestionar libros, autores, categorías, préstamos de todos, reportes PDF/Excel/CSV, gestión de usuarios.
+- Panel: `/dashboard/`
+- Login demo: `admin_bib` / `Admin1234!`
+
+---
+
+## Inicio de sesión por roles
+
+En la pantalla `/accounts/login/` hay dos pestañas:
+- **Lector** → verifica que la cuenta tenga rol "lector" → redirige a `/dashboard/lector/`
+- **Bibliotecario** → verifica que la cuenta tenga rol "bibliotecario" → redirige a `/dashboard/`
+
+Si se selecciona "Bibliotecario" pero la cuenta es Lector, se muestra:
+> "Tu cuenta no tiene permisos de bibliotecario."
+
+---
+
 ## Funcionalidades
 
 | Módulo | Descripción |
 |---|---|
-| **Autenticación** | Registro, inicio de sesión y cierre de sesión |
-| **Roles** | Lector y Bibliotecario con permisos diferenciados |
+| **Autenticación** | Registro con selector de rol, login con pestañas por rol, logout |
+| **Roles** | Lector y Bibliotecario — paneles y permisos completamente diferenciados |
 | **Catálogo** | CRUD completo de libros, autores y categorías |
 | **Préstamos** | Registro, seguimiento y devolución de préstamos |
 | **Reservas** | Reserva de libros con expiración automática |
 | **Sanciones** | Detección de retrasos y marcado automático de usuarios |
-| **Dashboard** | Panel con 3 gráficos estadísticos usando Chart.js |
+| **Dashboard Bibliotecario** | Panel con 7 stat-cards + 3 gráficos estadísticos (Chart.js) |
+| **Dashboard Lector** | Panel personal con stats propias + últimos préstamos/reservas |
 | **Reportes** | Filtros avanzados + exportación a PDF, Excel y CSV |
+| **Gestión de usuarios** | Listar, ver detalle y editar usuarios desde la interfaz web |
 | **Notificaciones** | Comando de consola para revisar vencimientos |
 | **Buscador** | Filtros por título, autor, categoría, estado y fecha |
 

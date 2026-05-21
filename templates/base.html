@@ -38,10 +38,17 @@
         <nav class="flex-grow-1 mt-3">
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}"
+                    {% if user.es_bibliotecario %}
+                    <a class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'index' %}active{% endif %}"
                        href="{% url 'dashboard:index' %}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
+                        <i class="bi bi-speedometer2"></i> Dashboard Admin
                     </a>
+                    {% else %}
+                    <a class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'lector' %}active{% endif %}"
+                       href="{% url 'dashboard:lector' %}">
+                        <i class="bi bi-speedometer2"></i> Mi Panel
+                    </a>
+                    {% endif %}
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if 'libros' in request.path %}active{% endif %}"

@@ -1,5 +1,5 @@
 # dashboard/views.py
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
@@ -14,6 +14,10 @@ from accounts.models import Usuario
 
 @login_required
 def index(request):
+    """Dashboard principal — solo para bibliotecarios."""
+    if not request.user.es_bibliotecario:
+        return redirect('dashboard:lector')
+
     hoy = timezone.now().date()
     hace_30_dias = hoy - timedelta(days=30)
 
@@ -107,3 +111,55 @@ def index(request):
         'ultimas_reservas': ultimas_reservas,
     }
     return render(request, 'dashboard/index.html', context)
+
+
+@login_required
+def lector(request):
+    """Dashboard personal para lectores."""
+    # Si es bibliotecario, va al panel de administración
+    if request.user.es_bibliotecario:
+        return redirect('dashboard:index')
+
+    hoy = timezone.now().date()
+    usuario = request.user
+
+    # ── Estadísticas personales ──
+    mis_prestamos = Prestamo.objects.filter(usuario=usuario)
+    mis_prestamos_activos    = mis_prestamos.filter(estado='activo').count()
+    mis_prestamos_retrasados = mis_prestamos.filter(estado='retrasado').count()
+    mis_reservas_pendientes  = Reserva.objects.filter(usuario=usuario, estado='pendiente').count()
+    libros_disponibles       = Libro.objects.filter(estado='disponible').count()
+
+    # ── Últimos préstamos propios ──
+    ultimos_prestamos = (
+        mis_prestamos
+        .select_related('libro')
+        .order_by('-fecha_prestamo')[:5]
+    )
+
+    # ── Reservas propias ──
+    mis_reservas = (
+        Reserva.objects
+        .filter(usuario=usuario)
+        .select_related('libro')
+        .order_by('-fecha_reserva')[:5]
+    )
+
+    # ── Libros disponibles recientes (sugerencias) ──
+    libros_recientes = (
+        Libro.objects
+        .filter(estado='disponible')
+        .prefetch_related('autores', 'categorias')
+        .order_by('-id')[:5]
+    )
+
+    context = {
+        'mis_prestamos_activos':    mis_prestamos_activos,
+        'mis_prestamos_retrasados': mis_prestamos_retrasados,
+        'mis_reservas_pendientes':  mis_reservas_pendientes,
+        'libros_disponibles':       libros_disponibles,
+        'ultimos_prestamos':        ultimos_prestamos,
+        'mis_reservas':             mis_reservas,
+        'libros_recientes':         libros_recientes,
+    }
+    return render(request, 'dashboard/lector.html', context)

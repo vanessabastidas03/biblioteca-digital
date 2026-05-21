@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block title %}Detalle de usuario — {{ usuario_detalle.get_full_name }}{% endblock %}
+{% block page_title %}Detalle de Usuario{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">
+        <i class="bi bi-person-badge me-2 text-primary"></i>
+        Perfil de usuario
+    </h5>
+    <div class="d-flex gap-2">
+        <a href="{% url 'accounts:usuario_editar' usuario_detalle.pk %}"
+           class="btn btn-primary btn-sm">
+            <i class="bi bi-pencil-square me-1"></i>Editar
+        </a>
+        <a href="{% url 'accounts:lista_usuarios' %}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Volver a la lista
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    <!-- Información principal -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-body">
+                <!-- Avatar + nombre -->
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3"
+                     style="border-bottom:1px solid #F1F5F9;">
+                    <div style="width:60px;height:60px;border-radius:50%;flex-shrink:0;
+                                background:linear-gradient(135deg,#4A90D9,#7C5CBF);
+                                display:flex;align-items:center;justify-content:center;
+                                font-size:1.4rem;font-weight:800;color:#fff;">
+                        {{ usuario_detalle.first_name|first|upper }}{{ usuario_detalle.last_name|first|upper }}
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold" style="color:#2F3A4A;">
+                            {{ usuario_detalle.get_full_name|default:usuario_detalle.username }}
+                        </h5>
+                        <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                            <span class="badge {% if usuario_detalle.es_bibliotecario %}bg-primary{% else %}bg-secondary{% endif %}">
+                                {% if usuario_detalle.es_bibliotecario %}
+                                    <i class="bi bi-shield-check me-1"></i>
+                                {% else %}
+                                    <i class="bi bi-person me-1"></i>
+                                {% endif %}
+                                {{ usuario_detalle.get_rol_display }}
+                            </span>
+                            {% if not usuario_detalle.is_active %}
+                            <span class="badge bg-dark">Inactivo</span>
+                            {% endif %}
+                            {% if usuario_detalle.sancionado %}
+                            <span class="badge bg-danger">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Sancionado
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datos del usuario -->
+                <dl class="row mb-0" style="font-size:.88rem;">
+                    <dt class="col-5 text-muted fw-normal">Usuario</dt>
+                    <dd class="col-7 fw-semibold">{{ usuario_detalle.username }}</dd>
+
+                    <dt class="col-5 text-muted fw-normal">Email</dt>
+                    <dd class="col-7">
+                        {% if usuario_detalle.email %}
+                            <a href="mailto:{{ usuario_detalle.email }}"
+                               class="text-decoration-none">{{ usuario_detalle.email }}</a>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-5 text-muted fw-normal">Teléfono</dt>
+                    <dd class="col-7">{{ usuario_detalle.telefono|default:"—" }}</dd>
+
+                    <dt class="col-5 text-muted fw-normal">Dirección</dt>
+                    <dd class="col-7">{{ usuario_detalle.direccion|default:"—" }}</dd>
+
+                    <dt class="col-5 text-muted fw-normal">Registro</dt>
+                    <dd class="col-7">{{ usuario_detalle.date_joined|date:"d/m/Y H:i" }}</dd>
+
+                    <dt class="col-5 text-muted fw-normal">Último acceso</dt>
+                    <dd class="col-7">
+                        {% if usuario_detalle.last_login %}
+                            {{ usuario_detalle.last_login|date:"d/m/Y H:i" }}
+                        {% else %}
+                            <span class="text-muted">Nunca</span>
+                        {% endif %}
+                    </dd>
+
+                    {% if usuario_detalle.sancionado and usuario_detalle.fecha_fin_sancion %}
+                    <dt class="col-5 text-muted fw-normal">Sancionado hasta</dt>
+                    <dd class="col-7 text-danger fw-semibold">
+                        {{ usuario_detalle.fecha_fin_sancion|date:"d/m/Y" }}
+                    </dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas de actividad -->
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header bg-transparent border-bottom"
+                 style="font-weight:700;font-size:.9rem;color:#2F3A4A;padding:.9rem 1.2rem;">
+                <i class="bi bi-bar-chart-fill text-primary me-2"></i>
+                Estadísticas de actividad
+            </div>
+            <div class="card-body">
+                {% if stats %}
+                <div class="row g-3">
+                    <div class="col-6 col-md-4">
+                        <div class="text-center p-3 rounded-3" style="background:#F8F7FF;">
+                            <div style="font-size:1.8rem;font-weight:800;color:#1e3a5f;">
+                                {{ stats.prestamos_total|default:"0" }}
+                            </div>
+                            <div style="font-size:.75rem;color:#6B7280;margin-top:.2rem;">
+                                <i class="bi bi-arrow-left-right me-1"></i>Préstamos totales
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="text-center p-3 rounded-3" style="background:#F0FDF4;">
+                            <div style="font-size:1.8rem;font-weight:800;color:#2d5a27;">
+                                {{ stats.prestamos_activos|default:"0" }}
+                            </div>
+                            <div style="font-size:.75rem;color:#6B7280;margin-top:.2rem;">
+                                <i class="bi bi-check-circle me-1"></i>Activos
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="text-center p-3 rounded-3"
+                             style="background:{% if stats.prestamos_retrasados > 0 %}#FEF2F2{% else %}#F8F7FF{% endif %};">
+                            <div style="font-size:1.8rem;font-weight:800;color:{% if stats.prestamos_retrasados > 0 %}#8b1a1a{% else %}#374151{% endif %};">
+                                {{ stats.prestamos_retrasados|default:"0" }}
+                            </div>
+                            <div style="font-size:.75rem;color:#6B7280;margin-top:.2rem;">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Retrasados
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="text-center p-3 rounded-3" style="background:#F0F9FF;">
+                            <div style="font-size:1.8rem;font-weight:800;color:#0e5a6b;">
+                                {{ stats.reservas_pendientes|default:"0" }}
+                            </div>
+                            <div style="font-size:.75rem;color:#6B7280;margin-top:.2rem;">
+                                <i class="bi bi-bookmark-check me-1"></i>Reservas pendientes
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="text-center p-3 rounded-3" style="background:#F8F7FF;">
+                            <div style="font-size:1.8rem;font-weight:800;color:#6B7280;">
+                                {{ stats.prestamos_devueltos|default:"0" }}
+                            </div>
+                            <div style="font-size:.75rem;color:#6B7280;margin-top:.2rem;">
+                                <i class="bi bi-check2-all me-1"></i>Devueltos
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="text-center p-3 rounded-3"
+                             style="background:{% if stats.sanciones_total > 0 %}#FEF2F2{% else %}#F8F7FF{% endif %};">
+                            <div style="font-size:1.8rem;font-weight:800;color:{% if stats.sanciones_total > 0 %}#8b1a1a{% else %}#374151{% endif %};">
+                                {{ stats.sanciones_total|default:"0" }}
+                            </div>
+                            <div style="font-size:.75rem;color:#6B7280;margin-top:.2rem;">
+                                <i class="bi bi-shield-exclamation me-1"></i>Sanciones
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-bar-chart" style="font-size:2.5rem;opacity:.3;"></i>
+                    <p class="mt-2 small mb-0">Sin datos de actividad disponibles.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
