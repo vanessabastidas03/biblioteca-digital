@@ -129,7 +129,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/dashboard/'   # dashboard/views.py redirige lectores a /dashboard/lector/
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # Email — consola para desarrollo, SMTP para producción

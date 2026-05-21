@@ -346,8 +346,32 @@ class Command(BaseCommand):
             )
             self.stdout.write(f'  Reserva pendiente (Historia del Tiempo → lector_sofia) — {"creado" if created else "ya existía"}')
 
+        # ── Sanción demo (para demostrar el módulo) ─────────────────
+        # Buscar el préstamo retrasado creado arriba para generar sanción
+        prestamo_retrasado = Prestamo.objects.filter(
+            usuario=lector2, estado=Prestamo.ESTADO_RETRASADO
+        ).first()
+        if prestamo_retrasado:
+            from prestamos.models import Sancion
+            _, created = Sancion.objects.get_or_create(
+                prestamo=prestamo_retrasado,
+                defaults={
+                    'usuario': lector2,
+                    'fecha_fin': hoy + timedelta(days=10),
+                    'dias_sancion': 10,
+                    'motivo': 'Retraso de 5 día(s) en la devolución de "Cien años de soledad"',
+                    'activa': True,
+                }
+            )
+            if created:
+                # Marcar usuario como sancionado
+                lector2.sancionado = True
+                lector2.fecha_fin_sancion = hoy + timedelta(days=10)
+                lector2.save(update_fields=['sancionado', 'fecha_fin_sancion'])
+            self.stdout.write(f'  Sanción demo (lector_sofia) — {"creada" if created else "ya existía"}')
+
         self.stdout.write(self.style.SUCCESS('\n✓ Datos de demostración cargados correctamente.\n'))
         self.stdout.write(self.style.WARNING('Usuarios de prueba:'))
         self.stdout.write('  Bibliotecario: admin_bib / Admin1234!')
-        self.stdout.write('  Lector 1:      lector_juan / Lector1234!')
-        self.stdout.write('  Lector 2:      lector_sofia / Lector1234!\n')
+        self.stdout.write('  Lector 1:      lector_juan / Lector1234!  (sin sanciones)')
+        self.stdout.write('  Lector 2:      lector_sofia / Lector1234! (sancionada — demo)\n')

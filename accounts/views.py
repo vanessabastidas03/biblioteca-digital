@@ -56,6 +56,11 @@ def iniciar_sesion(request):
             login(request, usuario)
             messages.success(request, f'¡Bienvenido/a de nuevo, {usuario.first_name}!')
 
+            # Respetar parámetro ?next= si existe (ej: @login_required redirect)
+            next_url = request.GET.get('next', '').strip()
+            if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+                return redirect(next_url)
+
             # Redirigir según rol real del usuario
             if usuario.es_bibliotecario:
                 return redirect('dashboard:index')
