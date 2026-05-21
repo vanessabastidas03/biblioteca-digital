@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}{{ accion }} Libro{% endblock %}
+{% block page_title %}{{ accion }} Libro{% endblock %}
+
+{% block content %}
+<div class="card p-4" style="max-width: 800px; margin: 0 auto;">
+    <h5 class="fw-bold mb-4">
+        <i class="bi bi-book me-2 text-primary"></i>{{ accion }} Libro
+    </h5>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-8 mb-3">
+                <label class="form-label fw-semibold">Título *</label>
+                {{ form.titulo }}
+                {% if form.titulo.errors %}<div class="text-danger small">{{ form.titulo.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">ISBN *</label>
+                {{ form.isbn }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">{{ form.autores.label }}</label>
+                {{ form.autores }}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">{{ form.categorias.label }}</label>
+                {{ form.categorias }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Editorial</label>
+                {{ form.editorial }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label fw-semibold">Año</label>
+                {{ form.anio_publicacion }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label fw-semibold">Tipo</label>
+                {{ form.tipo }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Descripción</label>
+            {{ form.descripcion }}
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Cantidad ejemplares</label>
+                {{ form.cantidad_ejemplares }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Ejemplares disponibles</label>
+                {{ form.ejemplares_disponibles }}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Ubicación</label>
+                {{ form.ubicacion }}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Portada</label>
+            {{ form.portada }}
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-2"></i>{{ accion }} libro
+            </button>
+            <a href="{% url 'catalogo:libro_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
