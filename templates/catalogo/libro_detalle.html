@@ -64,8 +64,8 @@
             {% endif %}
 
             <div class="d-flex gap-2 mt-3">
-                {% if libro.esta_disponible %}
-                <a href="{% url 'catalogo:libro_lista' %}" class="btn btn-success">
+                {% if libro.esta_disponible and not user.es_bibliotecario %}
+                <a href="{% url 'prestamos:crear_reserva' libro.pk %}" class="btn btn-success">
                     <i class="bi bi-bookmark-plus me-2"></i>Reservar
                 </a>
                 {% endif %}

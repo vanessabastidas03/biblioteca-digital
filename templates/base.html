@@ -1,4 +1,5 @@
 <!-- templates/base.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,20 +10,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- CSS personalizado -->
+    <link href="{% static 'css/biblioteca.css' %}" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .sidebar { min-height: 100vh; background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%); }
-        .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 10px 20px; border-radius: 8px; margin: 2px 10px; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,0.15); color: white; }
         .sidebar .nav-link i { margin-right: 10px; width: 20px; }
-        .sidebar-brand { color: white; font-size: 1.3rem; font-weight: bold; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-brand { color: white; border-bottom: 1px solid rgba(255,255,255,0.12); }
         .main-content { min-height: 100vh; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
-        .badge-disponible { background-color: #28a745; }
-        .badge-prestado { background-color: #fd7e14; }
-        .badge-retrasado { background-color: #dc3545; }
-        .navbar-top { background: white; border-bottom: 1px solid #e9ecef; padding: 10px 20px; }
-        .alert { border-radius: 10px; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -65,27 +58,35 @@
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                    <a class="nav-link {% if 'prestamos' in request.path %}active{% endif %}"
-                       href="{% url 'catalogo:libro_lista' %}">
+                    <a class="nav-link {% if 'prestamos' in request.path and 'reservas' not in request.path and 'sanciones' not in request.path %}active{% endif %}"
+                       href="{% url 'prestamos:lista' %}">
                         <i class="bi bi-arrow-left-right"></i> Préstamos
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if 'reservas' in request.path %}active{% endif %}"
-                       href="{% url 'catalogo:libro_lista' %}">
+                       href="{% url 'prestamos:reservas' %}">
                         <i class="bi bi-bookmark-check"></i> Reservas
                     </a>
                 </li>
                 {% if user.es_bibliotecario %}
+                <li class="nav-item mt-2">
                     <small class="text-white-50 px-4">ADMINISTRACIÓN</small>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'catalogo:libro_lista' %}">
+                    <a class="nav-link {% if 'sanciones' in request.path %}active{% endif %}"
+                       href="{% url 'prestamos:sanciones' %}">
+                        <i class="bi bi-shield-exclamation"></i> Sanciones
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'prestamos:reportes' %}">
                         <i class="bi bi-file-earmark-bar-graph"></i> Reportes
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'accounts:lista_usuarios' %}">
+                    <a class="nav-link {% if 'usuarios' in request.path %}active{% endif %}"
+                       href="{% url 'accounts:lista_usuarios' %}">
                         <i class="bi bi-people"></i> Usuarios
                     </a>
                 </li>

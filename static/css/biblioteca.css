@@ -1,0 +1,333 @@
+/* =====================================================
+   Biblioteca Digital — Estilos personalizados
+   Paleta: café, crema, dorado, verde oscuro, azul profundo
+   ===================================================== */
+
+/* ── Variables de color ── */
+:root {
+  --bib-cafe:       #5c3d2e;
+  --bib-cafe-claro: #8b5e3c;
+  --bib-crema:      #f5f0e8;
+  --bib-dorado:     #c9a84c;
+  --bib-dorado-claro: #e8c87a;
+  --bib-verde:      #2d5a27;
+  --bib-azul:       #1e3a5f;
+  --bib-azul-medio: #2d6a9f;
+  --sombra-suave:   0 4px 20px rgba(92, 61, 46, 0.12);
+  --sombra-hover:   0 8px 30px rgba(92, 61, 46, 0.22);
+  --radio:          14px;
+  --transicion:     0.3s ease;
+}
+
+/* ── Fondo general ── */
+body {
+  background-color: var(--bib-crema) !important;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Sidebar mejorado ── */
+.sidebar {
+  background: linear-gradient(160deg, var(--bib-cafe) 0%, var(--bib-azul) 100%) !important;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.18);
+}
+
+.sidebar-brand {
+  font-size: 1.25rem !important;
+  letter-spacing: 0.3px;
+  background: rgba(0,0,0,0.15);
+  padding: 22px 20px !important;
+}
+
+.sidebar .nav-link {
+  color: rgba(255,255,255,0.82) !important;
+  border-radius: 10px !important;
+  margin: 2px 10px !important;
+  padding: 10px 16px !important;
+  transition: background var(--transicion), color var(--transicion), transform var(--transicion);
+}
+
+.sidebar .nav-link:hover {
+  background: rgba(201, 168, 76, 0.22) !important;
+  color: var(--bib-dorado-claro) !important;
+  transform: translateX(4px);
+}
+
+.sidebar .nav-link.active {
+  background: rgba(201, 168, 76, 0.30) !important;
+  color: var(--bib-dorado-claro) !important;
+  font-weight: 600;
+  border-left: 3px solid var(--bib-dorado);
+}
+
+/* ── Barra superior ── */
+.navbar-top {
+  background: white !important;
+  border-bottom: 1px solid rgba(92, 61, 46, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ── Tarjetas ── */
+.card {
+  border: none !important;
+  border-radius: var(--radio) !important;
+  box-shadow: var(--sombra-suave) !important;
+  transition: box-shadow var(--transicion), transform var(--transicion);
+}
+
+.card:hover {
+  box-shadow: var(--sombra-hover) !important;
+}
+
+/* Hover en tarjetas de libros del catálogo */
+.libro-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--sombra-hover) !important;
+}
+
+.libro-card .card-img-top {
+  border-radius: var(--radio) var(--radio) 0 0;
+  transition: opacity var(--transicion);
+}
+
+.libro-card:hover .card-img-top {
+  opacity: 0.92;
+}
+
+/* ── Tarjetas de estadísticas del dashboard ── */
+.stat-card {
+  border-radius: var(--radio) !important;
+  border: none !important;
+  box-shadow: var(--sombra-suave) !important;
+  transition: transform var(--transicion), box-shadow var(--transicion);
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--sombra-hover) !important;
+}
+
+.stat-card .card-body {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card .stat-icon {
+  font-size: 3rem;
+  opacity: 0.18;
+  position: absolute;
+  right: 16px;
+  bottom: 8px;
+  transition: opacity var(--transicion), transform var(--transicion);
+}
+
+.stat-card:hover .stat-icon {
+  opacity: 0.30;
+  transform: rotate(-10deg) scale(1.1);
+}
+
+/* ── Botones ── */
+.btn {
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: transform var(--transicion), box-shadow var(--transicion), background var(--transicion) !important;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--bib-azul-medio), var(--bib-azul)) !important;
+  border: none !important;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #27ae60, var(--bib-verde)) !important;
+  border: none !important;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--bib-dorado), var(--bib-cafe-claro)) !important;
+  border: none !important;
+  color: white !important;
+}
+
+/* ── Tablas ── */
+.table {
+  border-radius: var(--radio);
+  overflow: hidden;
+}
+
+.table thead th {
+  background-color: var(--bib-crema) !important;
+  color: var(--bib-cafe) !important;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  border-bottom: 2px solid rgba(92, 61, 46, 0.15) !important;
+}
+
+.table-hover tbody tr {
+  transition: background var(--transicion);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(201, 168, 76, 0.08) !important;
+}
+
+/* ── Formularios ── */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--bib-dorado) !important;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18) !important;
+}
+
+/* ── Badges ── */
+.badge {
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* ── Alertas ── */
+.alert {
+  border-radius: var(--radio) !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ── Animación de entrada para tarjetas ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  animation: fadeUp 0.38s ease both;
+}
+
+/* Delay escalonado para la cuadrícula de libros */
+.row .col:nth-child(1) .card { animation-delay: 0.04s; }
+.row .col:nth-child(2) .card { animation-delay: 0.08s; }
+.row .col:nth-child(3) .card { animation-delay: 0.12s; }
+.row .col:nth-child(4) .card { animation-delay: 0.16s; }
+.row .col:nth-child(5) .card { animation-delay: 0.20s; }
+.row .col:nth-child(6) .card { animation-delay: 0.24s; }
+.row .col:nth-child(7) .card { animation-delay: 0.28s; }
+.row .col:nth-child(8) .card { animation-delay: 0.32s; }
+
+/* ── Página de login / registro ── */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bib-cafe) 0%, var(--bib-azul) 60%, var(--bib-verde) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-wrapper::before {
+  content: "📚";
+  font-size: 14rem;
+  position: absolute;
+  right: -2rem;
+  bottom: -2rem;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  animation: fadeUp 0.5s ease;
+}
+
+@keyframes pulseIcon {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.login-icon {
+  animation: pulseIcon 2.5s ease-in-out infinite;
+  color: var(--bib-dorado) !important;
+}
+
+/* ── Libro: portada placeholder ── */
+.libro-placeholder {
+  height: 200px;
+  background: linear-gradient(135deg, #f0e8d8, #e8d5b7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radio) var(--radio) 0 0;
+}
+
+.libro-placeholder i {
+  font-size: 3.5rem;
+  color: var(--bib-cafe-claro);
+  opacity: 0.5;
+}
+
+/* ── Autor: hover en fila de tabla ── */
+.autor-row {
+  transition: background var(--transicion), padding var(--transicion);
+  cursor: default;
+}
+
+/* ── Categoría: círculo de color ── */
+.categoria-color {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: transform var(--transicion);
+}
+
+.card:hover .categoria-color {
+  transform: scale(1.12);
+}
+
+/* ── Dashboard: sección de título ── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(92, 61, 46, 0.10);
+}
+
+.page-header h4 {
+  font-weight: 700;
+  color: var(--bib-cafe);
+  margin: 0;
+}
+
+/* ── Icono de libro animado en sidebar brand ── */
+@keyframes bookBounce {
+  0%, 100% { transform: rotate(0deg); }
+  25%  { transform: rotate(-8deg); }
+  75%  { transform: rotate(8deg); }
+}
+
+.sidebar-brand .bi-book-half {
+  display: inline-block;
+  animation: bookBounce 3s ease-in-out infinite;
+}
+
+/* ── Scrollbar personalizada ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(92, 61, 46, 0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(92, 61, 46, 0.55); }
