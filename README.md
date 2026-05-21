@@ -51,14 +51,13 @@ Si se selecciona "Bibliotecario" pero la cuenta es Lector, se muestra:
 
 ## Tecnologías
 
-- **Backend:** Django 6.0
+- **Backend:** Django 
 - **Frontend:** Bootstrap 5.3 + Bootstrap Icons + Chart.js
 - **Base de datos:** SQLite (desarrollo) / PostgreSQL (producción)
 - **Autenticación:** Django Auth con modelo personalizado
 - **PDF:** ReportLab
 - **Excel:** openpyxl
 - **Servidor estático:** Whitenoise
-- **Variables de entorno:** python-decouple
 
 ---
 
@@ -282,13 +281,6 @@ python manage.py cargar_datos_demo
 
 ---
 
-## Capturas de pantalla
-
-> *Se pueden agregar capturas en una carpeta `/docs/screenshots/` del proyecto.*
-
----
-
 ## Autor
 
-Desarrollado como proyecto académico de gestión de biblioteca digital con Django 6.0.
-
+Desarrollado como proyecto académico de gestión de biblioteca digital con Django 6.
