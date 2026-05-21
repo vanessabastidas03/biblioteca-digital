@@ -1,4 +1,4 @@
-# 📚 Biblioteca Digital
+# Biblioteca Digital
 
 Sistema de Gestión de Biblioteca Digital desarrollado con Django 6. Permite administrar libros, autores, categorías, préstamos, reservas y sanciones, con un panel de control con gráficos estadísticos y exportación de reportes.
 
@@ -6,13 +6,13 @@ Sistema de Gestión de Biblioteca Digital desarrollado con Django 6. Permite adm
 
 ## Roles de usuario
 
-### 📖 Lector
+### Lector
 - Puede: ver catálogo, buscar libros, reservar, ver sus préstamos y reservas, ver su perfil.
 - No puede: crear/editar/eliminar libros, ver reportes generales, gestionar usuarios.
 - Panel: `/dashboard/lector/`
 - Login demo: `lector_juan` / `Lector1234!`
 
-### 🏛️ Bibliotecario
+### Bibliotecario
 - Puede: todo lo anterior + gestionar libros, autores, categorías, préstamos de todos, reportes PDF/Excel/CSV, gestión de usuarios.
 - Panel: `/dashboard/`
 - Login demo: `admin_bib` / `Admin1234!`
@@ -283,4 +283,4 @@ python manage.py cargar_datos_demo
 
 ## Autor
 
-Desarrollado como proyecto académico de gestión de biblioteca digital con Django 6.
+Desarrollado como proyecto académico de gestión de biblioteca para Electiva I por Vanessa Bastidas 
