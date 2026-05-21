@@ -2,12 +2,12 @@
 {% extends 'base.html' %}
 
 {% block public_content %}
-<div class="min-vh-100 d-flex align-items-center justify-content-center py-5"
-     style="background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);">
-    <div class="card p-4" style="width: 100%; max-width: 520px;">
+<div class="login-wrapper py-5">
+    <div class="login-card" style="max-width:530px;">
+        <div class="card p-4 p-md-5 shadow-lg">
         <div class="text-center mb-4">
-            <i class="bi bi-person-plus text-primary" style="font-size: 2.5rem;"></i>
-            <h3 class="mt-2 fw-bold">Crear cuenta</h3>
+            <i class="bi bi-person-plus login-icon" style="font-size: 2.8rem;"></i>
+            <h3 class="mt-2 fw-bold" style="color:#5c3d2e;">Crear cuenta</h3>
         </div>
 
         {% if messages %}
@@ -62,11 +62,12 @@
             </button>
         </form>
 
-        <hr>
-        <p class="text-center text-muted mb-0">
+        <hr style="border-color: rgba(92,61,46,0.15);">
+        <p class="text-center text-muted mb-0 small">
             ¿Ya tienes cuenta?
-            <a href="{% url 'accounts:login' %}" class="fw-bold">Inicia sesión</a>
+            <a href="{% url 'accounts:login' %}" class="fw-bold" style="color:#c9a84c;">Inicia sesión</a>
         </p>
+        </div>
     </div>
 </div>
 {% endblock %}
